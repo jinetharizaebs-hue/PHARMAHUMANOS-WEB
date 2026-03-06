@@ -518,7 +518,7 @@ const DashboardVentas = () => {
         <div class="reporte-container">
           <div class="header">
             <h1>REPORTE DE VENTAS</h1>
-            <p>SAMARITANO EBS - Sistema de Gestión</p>
+            <p>Distribuidora Farmaceutica Maranatha J.A - Sistema de Gestion</p>
           </div>
 
           <div class="info-general">

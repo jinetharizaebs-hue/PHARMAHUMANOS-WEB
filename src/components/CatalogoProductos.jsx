@@ -8,6 +8,8 @@ import { getProductSalesAndRecommendations, mergeRecommendationsIntoProducts } f
 // Componente para subir imágenes a Cloudinary
 const CloudinaryUpload = ({ onImageUpload }) => {
   const [uploading, setUploading] = useState(false);
+  const cloudinaryCloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const cloudinaryUploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -25,12 +27,18 @@ const CloudinaryUpload = ({ onImageUpload }) => {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'catalogo_productos_web');
+
+    if (!cloudinaryCloudName || !cloudinaryUploadPreset) {
+      alert('Faltan variables de Cloudinary (VITE_CLOUDINARY_CLOUD_NAME y VITE_CLOUDINARY_UPLOAD_PRESET).');
+      return;
+    }
+
+    formData.append('upload_preset', cloudinaryUploadPreset);
 
     try {
       setUploading(true);
       const response = await fetch(
-        'https://api.cloudinary.com/v1_1/dstnroimw/image/upload',
+        `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`,
         {
           method: 'POST',
           body: formData,

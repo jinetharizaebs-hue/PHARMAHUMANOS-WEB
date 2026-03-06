@@ -44,7 +44,7 @@ const InvoiceScreen = () => {
   // Estados para vista de productos agregados
   const [vistaProductosAgregados, setVistaProductosAgregados] = useState('grid'); // 'grid' o 'list'
 
-  const vendedores = ['Edwin Marin', 'Fredy Marin', 'Fabian Marin'];
+  const vendedores = ['John Diaz', 'Alan Diaz'];
 
   // Cargar datos del pedido si vienen desde GestionPedidos
   useEffect(() => {

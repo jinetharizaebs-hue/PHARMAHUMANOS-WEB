@@ -157,6 +157,7 @@ const FacturaDetalle = () => {
   const imprimirFactura = () => {
     // Abrir ventana de impresión con el diseño específico para papel oficio horizontal
     const ventanaImpresion = window.open('', '_blank', 'width=1000,height=800');
+    const logoFacturaUrl = `${window.location.origin}/logo-maranatha.png`;
     
     const contenidoImpresion = `
       <!DOCTYPE html>
@@ -412,13 +413,27 @@ const FacturaDetalle = () => {
             .empresa-info {
               text-align: left;
             }
-            .empresa-info div {
-              font-size: 16px !important;
-              font-weight: 700;
-              line-height: 1.1;
+            .empresa-logo-wrap {
+              margin-bottom: 0.08cm;
+              display: flex;
+              align-items: center;
             }
-            .empresa-info strong {
-              font-size: 16px !important;
+            .empresa-logo {
+              width: 2.9cm;
+              max-height: 1.7cm;
+              object-fit: contain;
+              display: block;
+            }
+            .empresa-nombre {
+              font-size: 14px !important;
+              font-weight: 800;
+              line-height: 1.05;
+            }
+            .empresa-detalle {
+              font-size: 9px !important;
+              font-weight: 700;
+              line-height: 1.15;
+              margin-top: 0.02cm;
             }
             @media print {
               body {
@@ -442,17 +457,22 @@ const FacturaDetalle = () => {
               <div class="titulo-seccion">ORIGINAL - PARA EL ARCHIVO</div>
               <div class="encabezado">
                 <div class="empresa-info">
-                  <div><strong>SAMARITANO EBS</strong></div>
-                  <div>REMISIÓN</div>
+                  <div class="empresa-logo-wrap">
+                    <img class="empresa-logo" src="${logoFacturaUrl}" alt="Logo Maranatha" onerror="this.style.display='none'" />
+                  </div>
+                  <div class="empresa-nombre"><strong>DISTRIBUIDORA MARANATHA J.A</strong></div>
+                  <div class="empresa-detalle">NIT. 80741957-3</div>
+                  <div class="empresa-detalle">Bogotá Cel. 301 601 7182</div>
+                  <div class="empresa-detalle">Soacha Cel. 319 209 1629</div>
                 </div>
                 <div class="fecha-wrapper">
                   <div class="fecha">${formatearFecha(factura.fecha)}</div>
-                  <div class="plazo">Plazo a 30 dias<span class="check-box"></span></div>
+                  <div class="plazo">Credito<span class="check-box"></span></div>
                   <div class="plazo-contado">De contado<span class="check-box"></span></div>
                 </div>
               </div>
               
-              <div class="numero-cuenta">REMISIÓN #${factura.id.toString().padStart(6, '0')}</div>
+              <div class="numero-cuenta"> #${factura.id.toString().padStart(6, '0')}</div>
               
               <div class="info-cliente-vendedor">
                 <div class="info-item">
@@ -520,8 +540,8 @@ const FacturaDetalle = () => {
               
               <div class="footer">
                 <div>Gracias por su preferencia.</div>
-                <div class="footer-payment">NEQUI, TU LLAVE <span class="llave-nequi">3209105993</span>, CUENTA DAVIVIENDA # 474970011893</div>
-                <div class="logo">EBS - Sistema de Ebs-Hermanos Marin</div>
+                <div class="footer-payment">NEQUI, TU LLAVE <span class="llave-nequi"></span>, CUENTA  # </div>
+                <div class="logo">Distribuidora Farmaceutica Maranatha J.A</div>
               </div>
             </div>
             
@@ -530,17 +550,22 @@ const FacturaDetalle = () => {
               <div class="titulo-seccion">COPIA - PARA EL CLIENTE</div>
               <div class="encabezado">
                 <div class="empresa-info">
-                  <div><strong>SAMARITANO EBS</strong></div>
-                  <div>REMISIÓN</div>
+                  <div class="empresa-logo-wrap">
+                    <img class="empresa-logo" src="${logoFacturaUrl}" alt="Logo Maranatha" onerror="this.style.display='none'" />
+                  </div>
+                  <div class="empresa-nombre"><strong>DISTRIBUIDORA MARANATHA J.A</strong></div>
+                  <div class="empresa-detalle">NIT. 80741957-3</div>
+                  <div class="empresa-detalle">Bogotá Cel. 301 601 7182</div>
+                  <div class="empresa-detalle">Soacha Cel. 319 209 1629</div>
                 </div>
                 <div class="fecha-wrapper">
                   <div class="fecha">${formatearFecha(factura.fecha)}</div>
-                  <div class="plazo">Plazo a 30 dias<span class="check-box"></span></div>
+                  <div class="plazo">Credito<span class="check-box"></span></div>
                   <div class="plazo-contado">De contado<span class="check-box"></span></div>
                 </div>
               </div>
               
-              <div class="numero-cuenta">REMISIÓN #${factura.id.toString().padStart(6, '0')}</div>
+              <div class="numero-cuenta">#${factura.id.toString().padStart(6, '0')}</div>
               
               <div class="info-cliente-vendedor">
                 <div class="info-item">
@@ -608,8 +633,8 @@ const FacturaDetalle = () => {
               
               <div class="footer">
                 <div>Gracias por su preferencia.</div>
-                <div class="footer-payment">NEQUI, TU LLAVE <span class="llave-nequi">3209105993</span>, CUENTA DAVIVIENDA # 474970011893</div>
-                <div class="logo">EBS - Sistema de Ebs-Hermanos Marin</div>
+                <div class="footer-payment">NEQUI, TU LLAVE <span class="llave-nequi"></span>, CUENTA  # </div>
+                <div class="logo">Distribuidora Farmaceutica Maranatha J.A</div>
               </div>
             </div>
           </div>
