@@ -1175,7 +1175,7 @@ const FacturaDetalle = () => {
         </p>
         <div className="footer-logo">
           <span>EBS</span>
-          <small>Sistema de Ebs-Hermanos Marin</small>
+          <small>E-business-store Marin</small>
         </div>
       </div>
     </div>

@@ -295,7 +295,7 @@ const ImportExportActions = ({ productos, productosFiltrados, setProductos }) =>
 const ReporteInventario = ({ productos }) => {
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
   const [filtroEstado, setFiltroEstado] = useState('activos');
-  const categorias = ['Todas', 'Toallas', 'Bloqueadores y Cuidado de la Piel', 'Pañales', 'Alimentos', 'Desodorantes', 'Medicamentos', 'Cuidado del Cabello','Jabones y Geles','Otros','Producto del Dia Promocion'];
+  const categorias = ['Todas', 'Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud Sexual', 'Primeros Auxilios'];
 
   // Filtrar productos según los filtros seleccionados
   const productosFiltrados = productos.filter(producto => {
@@ -525,7 +525,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
   const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
   const [mostrarAccionesMobile, setMostrarAccionesMobile] = useState(false);
 
-  const categorias = ['Toallas', 'Bloqueadores y Cuidado de la Piel', 'Pañales', 'Alimentos', 'Desodorantes', 'Medicamentos', 'Cuidado del Cabello','Jabones y Geles','Otros','Producto del Dia Promocion'];
+  const categorias = ['Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud Sexual', 'Primeros Auxilios'];
 
   // Cargar productos desde Supabase
   useEffect(() => {

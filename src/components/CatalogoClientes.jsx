@@ -16,7 +16,7 @@ const CatalogoClientes = () => {
     notas: '',
     vendedor: ''
   });
-  const vendedores = ['Edwin Marin', 'Fredy Marin', 'Fabian Marin'];
+  const vendedores = ['John Diaz', 'Alan Diaz', 'vendedor 3'];
   const [mostrarCarrito, setMostrarCarrito] = useState(false);
   const [showQuantityNotification, setShowQuantityNotification] = useState(false);
   const [categorias, setCategorias] = useState(['Todas']);
@@ -269,7 +269,7 @@ const CatalogoClientes = () => {
   // Validar información del cliente
   const validarCliente = () => {
     // ✅ FIX 1: Validar vendedor es obligatorio
-    const vendedoresValidos = ['Edwin Marin', 'Fredy Marin', 'Fabian Marin'];
+    const vendedoresValidos = ['John Diaz', 'Alan Diaz', 'vendedor 3'];
     if (!clienteInfo.vendedor?.trim() || !vendedoresValidos.includes(clienteInfo.vendedor.trim())) {
       setError('❌ Por favor selecciona un vendedor válido');
       return false;
@@ -670,7 +670,7 @@ const CatalogoClientes = () => {
         </button>
         
         <div className="brand-text">
-          EBS Hermanos Marin - ING. Edwin Marin 3004583117
+          E-business-store Marin - ING. Edwin Marin 3004583117
         </div>
       </div>
 
