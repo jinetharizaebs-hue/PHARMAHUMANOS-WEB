@@ -34,6 +34,7 @@ const CloudinaryUpload = ({ onImageUpload }) => {
     }
 
     formData.append('upload_preset', cloudinaryUploadPreset);
+    formData.append('folder', 'productos');
 
     try {
       setUploading(true);
