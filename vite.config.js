@@ -8,4 +8,4 @@ export default defineConfig({
       overlay: false // Puedes desactivar temporalmente el overlay
     }
   }
-})
+})// redeploy trigger
