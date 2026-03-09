@@ -1,0 +1,14 @@
+{
+  "name": "insertar-productos-script",
+  "version": "1.0.0",
+  "description": "Script para insertar productos masivamente en Supabase",
+  "main": "insertar_productos.js",
+  "type": "module",
+  "scripts": {
+    "start": "node insertar_productos.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1"
+  }
+}
