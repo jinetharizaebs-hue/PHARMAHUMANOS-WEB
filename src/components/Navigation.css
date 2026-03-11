@@ -48,15 +48,30 @@
 }
 
 .nav-brand h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  display: none;
 }
 
 .nav-brand a {
+  display: flex;
+  align-items: center;
   text-decoration: none;
   color: inherit;
+}
+
+/* Logo de marca */
+.brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 56px;
+}
+
+.brand-logo-img {
+  display: block;
+  height: 56px;
+  width: auto;
+  max-width: min(72vw, 560px);
+  object-fit: contain;
 }
 
 .user-role {
@@ -117,13 +132,12 @@
   display: flex;
   gap: 0.75rem;
   list-style: none;
-  margin: 0;
+  margin: 0 0 0 0.5rem;
   padding: 0;
   transition: var(--transition);
   flex-wrap: wrap;
   flex: 1;
   justify-content: flex-start;
-  margin-left: 0.5rem;
 }
 
 /* Estilos para enlaces normales */
@@ -365,7 +379,7 @@
   font-size: 0.9rem;
 }
 
-/* RESPONSIVE - Estilos para tablets (VISTA MEJORADA) */
+/* RESPONSIVE - Estilos para tablets */
 @media (max-width: 1200px) and (min-width: 769px) {
   .nav-links {
     gap: 0.5rem;
@@ -394,9 +408,14 @@
     max-width: 100%;
     padding: 0 0.5rem;
   }
+
+  .brand-logo-img {
+    height: 52px;
+    max-width: 420px;
+  }
 }
 
-/* RESPONSIVE - Estilos para móviles (MENÚ HAMBURGUESA) */
+/* RESPONSIVE - Móviles */
 @media (max-width: 768px) {
   .navigation {
     padding: 0.6rem 1rem;
@@ -406,16 +425,34 @@
     right: 0;
     width: 100%;
   }
-  
+
   .nav-container {
     flex-wrap: nowrap;
   }
-  
+
+  .nav-brand {
+    gap: 0.5rem;
+  }
+
+  .brand-logo {
+    min-height: auto;
+  }
+
+  .brand-logo-img {
+    height: 42px;
+    max-width: 80vw;
+  }
+
+  .user-role {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.55rem;
+  }
+
   .mobile-menu-toggle {
     display: flex;
     margin-left: 0.5rem;
   }
-  
+
   .nav-links {
     position: fixed;
     top: 60px;
@@ -433,14 +470,15 @@
     height: calc(100vh - 60px);
     overflow-y: auto;
     z-index: 999;
+    margin-left: 0;
   }
-  
+
   .nav-links-open {
     transform: translateY(0);
     opacity: 1;
     visibility: visible;
   }
-  
+
   .nav-link,
   .group-toggle {
     padding: 1rem;
@@ -449,7 +487,7 @@
     font-size: 1.1rem;
     width: 100%;
   }
-  
+
   /* Submenús en móviles */
   .submenu {
     position: static;
@@ -460,30 +498,30 @@
     margin: 0.5rem 0 0.5rem 1rem;
     max-height: 0;
   }
-  
+
   .submenu-open {
     max-height: 300px;
     margin-top: 0;
   }
-  
+
   .submenu-link {
     padding: 0.8rem 1rem 0.8rem 2rem;
     font-size: 1rem;
   }
-  
+
   .nav-user {
     position: static;
     margin-left: 0.5rem;
   }
-  
+
   .username {
     display: none;
   }
-  
+
   .logout-text {
     display: none;
   }
-  
+
   .logout-btn {
     padding: 0.5rem;
     border-radius: 50%;
@@ -491,17 +529,16 @@
     height: 40px;
     justify-content: center;
   }
-  
+
   .logout-icon {
     margin: 0;
     font-size: 1.2rem;
   }
-  
-  /* Ajustes responsive para el botón de login */
+
   .login-text {
     display: none;
   }
-  
+
   .login-link {
     padding: 0.5rem;
     border-radius: 50%;
@@ -509,12 +546,12 @@
     height: 40px;
     justify-content: center;
   }
-  
+
   .login-icon {
     margin: 0;
     font-size: 1.2rem;
   }
-  
+
   .mobile-overlay {
     position: fixed;
     top: 60px;
@@ -525,8 +562,7 @@
     z-index: 998;
     backdrop-filter: blur(2px);
   }
-  
-  /* Asegura que el contenido principal no quede detrás de la navegación fija */
+
   body {
     padding-top: 60px;
   }
@@ -534,24 +570,25 @@
 
 /* Para pantallas muy pequeñas */
 @media (max-width: 480px) {
-  .nav-brand h2 {
-    font-size: 1.1rem;
+  .navigation {
+    padding: 0.5rem;
   }
-  
+
+  .brand-logo-img {
+    height: 36px;
+    max-width: 170px;
+  }
+
   .user-role {
     font-size: 0.7rem;
     padding: 0.15rem 0.5rem;
   }
-  
-  .navigation {
-    padding: 0.5rem;
-  }
-  
+
   .nav-links {
     top: 50px;
     height: calc(100vh - 50px);
   }
-  
+
   body {
     padding-top: 50px;
   }
@@ -575,12 +612,12 @@
   .group-toggle {
     border: 1px solid rgba(255, 255, 255, 0.3);
   }
-  
+
   .logout-btn,
   .login-link {
     border: 1px solid rgba(255, 255, 255, 0.3);
   }
-  
+
   .submenu {
     border: 2px solid rgba(255, 255, 255, 0.3);
   }
@@ -597,13 +634,13 @@
   .submenu {
     transition: none;
   }
-  
+
   .nav-link::before,
   .nav-link::after,
   .group-toggle::before {
     display: none;
   }
-  
+
   .nav-links {
     transition: none;
   }

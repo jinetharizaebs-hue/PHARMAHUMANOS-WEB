@@ -28,8 +28,12 @@ const Navigation = () => {
   // Cerrar menú al hacer clic fuera de él
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target) && 
-          toggleRef.current && !toggleRef.current.contains(event.target)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        toggleRef.current &&
+        !toggleRef.current.contains(event.target)
+      ) {
         setIsMenuOpen(false);
         setMenuActivo(null);
       }
@@ -58,10 +62,10 @@ const Navigation = () => {
     if (user.role === 'superadmin') {
       return [
         // INICIO & VENTAS - Grupo
-        { 
-          path: '#ventas', 
-          label: 'Inicio & Ventas', 
-          icon: '🏠', 
+        {
+          path: '#ventas',
+          label: 'Inicio & Ventas',
+          icon: '🏠',
           tipo: 'grupo',
           submenu: [
             { path: '/nueva-factura', label: 'Nueva Factura', icon: '➕' },
@@ -73,10 +77,10 @@ const Navigation = () => {
           ]
         },
         // REPORTES & ANÁLISIS - Grupo
-        { 
-          path: '#informes', 
-          label: 'Reportes & Análisis', 
-          icon: '📊', 
+        {
+          path: '#informes',
+          label: 'Reportes & Análisis',
+          icon: '📊',
           tipo: 'grupo',
           submenu: [
             { path: '/auditoria-productos', label: 'Auditoría de Productos', icon: '📋' },
@@ -87,10 +91,10 @@ const Navigation = () => {
           ]
         },
         // CONTABILIDAD - Grupo
-        { 
-          path: '#contabilidad', 
-          label: 'Contabilidad', 
-          icon: '💰', 
+        {
+          path: '#contabilidad',
+          label: 'Contabilidad',
+          icon: '💰',
           tipo: 'grupo',
           submenu: [
             { path: '/gastos', label: 'Gestión de Gastos', icon: '💸' },
@@ -100,10 +104,10 @@ const Navigation = () => {
           ]
         },
         // BODEGA - Grupo
-        { 
-          path: '#bodega', 
-          label: 'Bodega', 
-          icon: '📦', 
+        {
+          path: '#bodega',
+          label: 'Bodega',
+          icon: '📦',
           tipo: 'grupo',
           submenu: [
             { path: '/catalogo', label: 'Catálogo Productos', icon: '📚' },
@@ -114,14 +118,13 @@ const Navigation = () => {
       ];
     }
 
-    // Enlaces para usuarios logueados (según rol)
     if (user.role === 'admin') {
       return [
         // INICIO & VENTAS - Grupo
-        { 
-          path: '#ventas', 
-          label: 'Inicio & Ventas', 
-          icon: '🏠', 
+        {
+          path: '#ventas',
+          label: 'Inicio & Ventas',
+          icon: '🏠',
           tipo: 'grupo',
           submenu: [
             { path: '/nueva-factura', label: 'Nueva Factura', icon: '➕' },
@@ -133,10 +136,10 @@ const Navigation = () => {
           ]
         },
         // INFORMES - Grupo
-        { 
-          path: '#informes', 
-          label: 'Informes', 
-          icon: '📑', 
+        {
+          path: '#informes',
+          label: 'Informes',
+          icon: '📑',
           tipo: 'grupo',
           submenu: [
             { path: '/auditoria-productos', label: 'Auditoría de Productos', icon: '📋' },
@@ -146,10 +149,10 @@ const Navigation = () => {
           ]
         },
         // CONTABILIDAD - Grupo
-        { 
-          path: '#contabilidad', 
-          label: 'Contabilidad', 
-          icon: '💰', 
+        {
+          path: '#contabilidad',
+          label: 'Contabilidad',
+          icon: '💰',
           tipo: 'grupo',
           submenu: [
             { path: '/gastos', label: 'Gestión de Gastos', icon: '💸' },
@@ -159,10 +162,10 @@ const Navigation = () => {
           ]
         },
         // BODEGA - Grupo
-        { 
-          path: '#bodega', 
-          label: 'Bodega', 
-          icon: '📦', 
+        {
+          path: '#bodega',
+          label: 'Bodega',
+          icon: '📦',
           tipo: 'grupo',
           submenu: [
             { path: '/catalogo', label: 'Catálogo Productos', icon: '📚' },
@@ -173,7 +176,7 @@ const Navigation = () => {
       ];
     }
 
-    // Contabilidad (caro) - Ver facturas, reportes, gestión de pedidos, catálogo (lectura)
+    // Contabilidad
     if (user.role === 'contabilidad') {
       return [
         { path: '/dashboard-contabilidad', label: 'Dashboard Contabilidad', icon: '📊', tipo: 'simple' },
@@ -191,7 +194,7 @@ const Navigation = () => {
       ];
     }
 
-    // Inventario (inv) - Gestionar catálogo, control de inventario, gestión de pedidos - SIN reporte de catálogo
+    // Inventario
     if (user.role === 'inventario') {
       return [
         { path: '/catalogo', label: 'Catálogo Productos', icon: '📚', tipo: 'simple' },
@@ -204,30 +207,31 @@ const Navigation = () => {
     }
 
     if (user.role === 'cliente') {
-      return [
-        { path: '/catalogo-cliente', label: 'Catálogo', icon: '📚', tipo: 'simple' }
-      ];
+      return [{ path: '/catalogo-cliente', label: 'Catálogo', icon: '📚', tipo: 'simple' }];
     }
 
     // Enlaces por defecto para otros roles
-    return [
-      { path: '/facturacion', label: 'Facturación', icon: '🧾', tipo: 'simple' }
-    ];
+    return [{ path: '/facturacion', label: 'Facturación', icon: '🧾', tipo: 'simple' }];
   };
+
+  const availableLinks = getAvailableLinks();
 
   // Verificar si la ruta está activa
   const isActiveLink = (path) => {
-    if (path === '/') {
-      return location.pathname === '/';
-    }
+    if (path === '/') return location.pathname === '/';
+
     if (path.startsWith('#')) {
-      // Para grupos, verificar si alguna ruta del submenu está activa
-      const grupo = availableLinks.find(link => link.path === path);
+      const grupo = availableLinks.find((link) => link.path === path);
       if (grupo && grupo.submenu) {
-        return grupo.submenu.some(item => location.pathname === item.path || location.pathname.startsWith(item.path + '/'));
+        return grupo.submenu.some(
+          (item) =>
+            location.pathname === item.path ||
+            location.pathname.startsWith(item.path + '/')
+        );
       }
       return false;
     }
+
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
@@ -235,7 +239,7 @@ const Navigation = () => {
     if (link.tipo === 'grupo') {
       return (
         <div key={link.path} className="nav-group">
-          <button 
+          <button
             className={`nav-link group-toggle ${isActiveLink(link.path) ? 'active' : ''}`}
             onClick={() => toggleSubmenu(link.path)}
           >
@@ -245,11 +249,12 @@ const Navigation = () => {
               ▼
             </span>
           </button>
+
           <div className={`submenu ${menuActivo === link.path ? 'submenu-open' : ''}`}>
-            {link.submenu.map(subLink => (
-              <Link 
-                key={subLink.path} 
-                to={subLink.path} 
+            {link.submenu.map((subLink) => (
+              <Link
+                key={subLink.path}
+                to={subLink.path}
                 className={`submenu-link ${isActiveLink(subLink.path) ? 'active' : ''}`}
                 onClick={() => {
                   setIsMenuOpen(false);
@@ -266,9 +271,9 @@ const Navigation = () => {
     }
 
     return (
-      <Link 
-        key={link.path} 
-        to={link.path} 
+      <Link
+        key={link.path}
+        to={link.path}
         className={`nav-link ${isActiveLink(link.path) ? 'active' : ''}`}
         onClick={() => setIsMenuOpen(false)}
       >
@@ -278,19 +283,24 @@ const Navigation = () => {
     );
   };
 
-  const availableLinks = getAvailableLinks();
-
   return (
     <nav className="navigation">
       <div className="nav-container">
         <div className="nav-brand">
-          <Link to="/">
-            <h2>DISTRIBUIDORA FARMACEUTICA MARANATHA J.A.</h2>
+          <Link to="/" aria-label="Inicio">
+            <div className="brand-logo">
+              <img
+                src="/logo-maranatha.png"
+                alt="Logo Maranatha"
+                className="brand-logo-img"
+              />
+            </div>
           </Link>
+
           {user && <span className="user-role">{user.role}</span>}
-          
+
           {/* Botón de menú hamburguesa para móviles */}
-          <button 
+          <button
             ref={toggleRef}
             className={`mobile-menu-toggle ${isMenuOpen ? 'active' : ''}`}
             onClick={toggleMenu}
@@ -302,22 +312,16 @@ const Navigation = () => {
             <span className="hamburger-line"></span>
           </button>
         </div>
-        
-        <div 
-          ref={menuRef}
-          className={`nav-links ${isMenuOpen ? 'nav-links-open' : ''}`}
-        >
+
+        <div ref={menuRef} className={`nav-links ${isMenuOpen ? 'nav-links-open' : ''}`}>
           {availableLinks.map(renderLink)}
         </div>
-        
+
         <div className="nav-user">
           {user ? (
             <>
               <span className="username">Hola, {user.username}</span>
-              <button 
-                onClick={handleLogout} 
-                className="logout-btn"
-              >
+              <button onClick={handleLogout} className="logout-btn">
                 <span className="logout-icon">🚪</span>
                 <span className="logout-text">Cerrar sesión</span>
               </button>
@@ -330,11 +334,11 @@ const Navigation = () => {
           )}
         </div>
       </div>
-      
+
       {/* Overlay para cerrar el menú al hacer clic fuera */}
       {isMenuOpen && (
-        <div 
-          className="mobile-overlay" 
+        <div
+          className="mobile-overlay"
           onClick={() => {
             setIsMenuOpen(false);
             setMenuActivo(null);
