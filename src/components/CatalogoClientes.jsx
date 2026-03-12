@@ -276,7 +276,7 @@ const CatalogoClientes = () => {
     }
 
     if (!clienteInfo.nombre?.trim() || clienteInfo.nombre.trim().length < 3) {
-      setError('❌ Por favor ingresa tu nombre completo (mínimo 3 caracteres)');
+      setError('❌ Por favor ingresa el nombre de la droguería (mínimo 3 caracteres)');
       return false;
     }
     
@@ -871,14 +871,14 @@ const CatalogoClientes = () => {
                         {!clienteInfo.vendedor.trim() && <span className="error-text">Campo obligatorio</span>}
                       </div>
                       <div className="form-group">
-                        <label htmlFor="nombre-cliente">Nombre Completo *</label>
+                        <label htmlFor="nombre-cliente">Nombre de la droguería *</label>
                         <input
                           id="nombre-cliente"
                           type="text"
                           name="nombre"
                           value={clienteInfo.nombre}
                           onChange={handleInputChange}
-                          placeholder="Ej: María González"
+                          placeholder="Ej: Droguería San José"
                           className={!clienteInfo.nombre.trim() ? 'input-error' : ''}
                         />
                         {!clienteInfo.nombre.trim() && <span className="error-text">Campo obligatorio</span>}
