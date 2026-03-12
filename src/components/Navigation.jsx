@@ -215,6 +215,7 @@ const Navigation = () => {
   };
 
   const availableLinks = getAvailableLinks();
+  const shortUsername = user?.username?.trim().split(/\s+/)[0] || '';
 
   // Verificar si la ruta está activa
   const isActiveLink = (path) => {
@@ -320,7 +321,8 @@ const Navigation = () => {
         <div className="nav-user">
           {user ? (
             <>
-              <span className="username">Hola, {user.username}</span>
+              <span className="username username-full">Hola, {user.username}</span>
+              <span className="username username-short">{shortUsername}</span>
               <button onClick={handleLogout} className="logout-btn">
                 <span className="logout-icon">🚪</span>
                 <span className="logout-text">Cerrar sesión</span>

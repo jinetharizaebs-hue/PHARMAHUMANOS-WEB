@@ -333,6 +333,10 @@
   letter-spacing: 0.3px;
 }
 
+.username-short {
+  display: none;
+}
+
 .logout-btn {
   background: var(--danger);
   color: white;
@@ -514,8 +518,16 @@
     margin-left: 0.5rem;
   }
 
-  .username {
+  .username-full {
     display: none;
+  }
+
+  .username-short {
+    display: inline-flex;
+    align-items: center;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .logout-text {
@@ -582,6 +594,12 @@
   .user-role {
     font-size: 0.7rem;
     padding: 0.15rem 0.5rem;
+  }
+
+  .username-short {
+    max-width: 84px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.78rem;
   }
 
   .nav-links {

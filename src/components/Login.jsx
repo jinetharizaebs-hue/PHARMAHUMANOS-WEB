@@ -70,7 +70,11 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1>DISTRIBUIDORA FARMACEUTICA MARANATHA J.A.</h1>
+          <img
+            src="/logo-maranatha.png"
+            alt="Logo Maranatha"
+            className="login-header-logo"
+          />
           <p>Sistema de pedidos y catálogo digital</p>
         </div>
         
