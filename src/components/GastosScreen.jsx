@@ -254,7 +254,7 @@ const GastosScreen = () => {
   const categoriasGastos = [
     'Servicios', 'Nómina', 'Gasolina', 'Arriendo', 'Comida', 'Transporte',
     'Ofrenda', 'Arreglos', 'Parqueadero', 'Viajes', 'Pasajes', 'Compras Oficina',
-    'Fechas Especiales', 'Varios', 'EPS', 'Créditos'
+    'Fechas Especiales', 'Varios', 'EPS', 'Créditos', 'Cuidado Personal', 'Antigripal Cuidado Respiratorio'
   ];
 
   // Tipos de gasto

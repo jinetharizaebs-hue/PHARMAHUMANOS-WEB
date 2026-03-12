@@ -295,7 +295,7 @@ const ImportExportActions = ({ productos, productosFiltrados, setProductos }) =>
 const ReporteInventario = ({ productos }) => {
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
   const [filtroEstado, setFiltroEstado] = useState('activos');
-  const categorias = ['Todas', 'Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud Sexual', 'Primeros Auxilios'];
+  const categorias = ['Todas', 'Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud Sexual', 'Primeros Auxilios', 'Cuidado Personal', 'Antigripal Cuidado Respiratorio'];
 
   // Filtrar productos según los filtros seleccionados
   const productosFiltrados = productos.filter(producto => {
