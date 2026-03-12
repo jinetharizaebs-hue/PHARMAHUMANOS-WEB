@@ -13,6 +13,34 @@ const Login = () => {
   // Datos de usuarios con roles y permisos específicos
   const users = [
     {
+      id: 101,
+      username: 'e11',
+      password: 'emc',
+      role: 'admin',
+      descripcion: 'Admin - Acceso total, creacion y gestion completa del sistema.'
+    },
+    {
+      id: 102,
+      username: 'inv',
+      password: '1v3nt',
+      role: 'inventario',
+      descripcion: 'Inventario - Gestion de catalogo, control de stock y pedidos.'
+    },
+    {
+      id: 103,
+      username: 'EBS',
+      password: '801551',
+      role: 'admin',
+      descripcion: 'Admin - Acceso total para supervision y gestion.'
+    },
+    {
+      id: 104,
+      username: 'caro',
+      password: 'caro123',
+      role: 'contabilidad',
+      descripcion: 'Contabilidad - Reportes, control financiero y cuentas por pagar.'
+    },
+    {
       id: 1,
       username: 'John Diaz',
       password: 'john123',
@@ -110,8 +138,7 @@ const Login = () => {
               </button>
             </form>
 
-            {/* Información de Roles - OCULTA */}
-            {/* <div className="roles-info">
+            <div className="roles-info">
               <h4>Roles y Accesos:</h4>
               <div className="roles-list">
                 {users.map((user) => (
@@ -124,7 +151,7 @@ const Login = () => {
                   </div>
                 ))}
               </div>
-            </div> */}
+            </div>
           </div>
           
           <div className="catalog-section">
