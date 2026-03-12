@@ -16,7 +16,17 @@ const CatalogoClientes = () => {
     notas: '',
     vendedor: ''
   });
-  const vendedores = ['John Diaz', 'Alan Diaz', 'vendedor 3'];
+  const vendedores = ['John Diaz', 'Alan Díaz'];
+  const normalizarVendedor = (nombre = '') =>
+    nombre
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  const telefonosPorVendedor = {
+    'john diaz': '573016017182',
+    'alan diaz': '573192091629'
+  };
   const [mostrarCarrito, setMostrarCarrito] = useState(false);
   const [showQuantityNotification, setShowQuantityNotification] = useState(false);
   const [categorias, setCategorias] = useState(['Todas']);
@@ -268,9 +278,9 @@ const CatalogoClientes = () => {
 
   // Validar información del cliente
   const validarCliente = () => {
-    // ✅ FIX 1: Validar vendedor es obligatorio
-    const vendedoresValidos = ['John Diaz', 'Alan Diaz', 'vendedor 3'];
-    if (!clienteInfo.vendedor?.trim() || !vendedoresValidos.includes(clienteInfo.vendedor.trim())) {
+    // ✅ FIX 1: Validar vendedor es obligatorio y debe tener número configurado
+    const vendedorSeleccionado = normalizarVendedor(clienteInfo.vendedor);
+    if (!clienteInfo.vendedor?.trim() || !telefonosPorVendedor[vendedorSeleccionado]) {
       setError('❌ Por favor selecciona un vendedor válido');
       return false;
     }
@@ -375,9 +385,16 @@ const CatalogoClientes = () => {
       setError(null); // Limpiar errores anteriores
 
       // Preparar mensaje para WhatsApp
-      const numerosWhatsApp = ['573002945085', '573004583117']; // Dos números de WhatsApp
+      const vendedorSeleccionado = normalizarVendedor(clienteInfo.vendedor);
+      const numeroWhatsApp = telefonosPorVendedor[vendedorSeleccionado];
+      if (!numeroWhatsApp) {
+        setEnviandoPedido(false);
+        setError('No se encontró número de WhatsApp para el vendedor seleccionado.');
+        return;
+      }
       
       let mensaje = `*¡NUEVO PEDIDO!*%0A%0A`;
+      mensaje += `*Vendedor:* ${clienteInfo.vendedor}%0A`;
       mensaje += `*Cliente:* ${clienteInfo.nombre}%0A`;
       mensaje += `*Teléfono:* ${clienteInfo.telefono}%0A`;
       if (clienteInfo.direccion.trim()) {
@@ -402,13 +419,9 @@ const CatalogoClientes = () => {
       mensaje += `*📅 FECHA:* ${new Date().toLocaleDateString('es-CO')}%0A%0A`;
       mensaje += `_Pedido generado desde Catálogo Digital_`;
 
-      // Enviar a los dos números de WhatsApp
-      numerosWhatsApp.forEach((numero, index) => {
-        const url = `https://api.whatsapp.com/send?phone=${numero}&text=${mensaje}`;
-        setTimeout(() => {
-          window.open(url, '_blank');
-        }, index * 500); // Desfasar apertura de ventanas
-      });
+      // Enviar solo al número de WhatsApp del vendedor seleccionado
+      const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensaje}`;
+      window.open(url, '_blank');
       
       // ✅ SOLUCIÓN: Cerrar el carrito automáticamente después de enviar
       setPedidoEnviado(true);
