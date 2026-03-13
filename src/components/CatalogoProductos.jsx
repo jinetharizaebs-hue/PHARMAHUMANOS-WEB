@@ -525,7 +525,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
   const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
   const [mostrarAccionesMobile, setMostrarAccionesMobile] = useState(false);
 
-  const categorias = ['Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud Sexual', 'Primeros Auxilios'];
+  const categorias = ['Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud Sexual', 'Primeros Auxilios', 'Cuidado Personal', 'Antigripal Cuidado Respiratorio'];
 
   // Cargar productos desde Supabase
   useEffect(() => {
