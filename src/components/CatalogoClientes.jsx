@@ -36,7 +36,7 @@ const CatalogoClientes = () => {
   const [numeroPedido, setNumeroPedido] = useState(null);
   const [imagenAmpliada, setImagenAmpliada] = useState(null);
   const [ordenamiento, setOrdenamiento] = useState('ultimos-agregados');
-  const [cantidadesRapidas] = useState([12, 24, 36, 48, 60, 72]);
+  const [cantidadesRapidas] = useState([6, 12]);
   const [vistaActual, setVistaActual] = useState('grid'); // 'grid' o 'lista'
 
   const location = useLocation();
