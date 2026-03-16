@@ -82,17 +82,17 @@ const ProtectedRoute = ({ children, requiredRoles = [] }) => {
 const PageMeta = ({ title, description }) => {
   return (
     <Helmet>
-      <title>{title || 'Catálogo EBS Hermanos Marín'}</title>
-      <meta name="description" content={description || 'Sistema de gestión y catálogo de productos EBS Hermanos Marín'} />
+      <title>{title || 'Catálogo e-business store(EBS)'}</title>
+      <meta name="description" content={description || 'Sistema de gestión y catálogo de productos e-business store(EBS)'} />
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
       <meta name="theme-color" content="#4CAF50" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-      <meta name="apple-mobile-web-app-title" content="EBS Catálogo" />
+      <meta name="apple-mobile-web-app-title" content="e-business store(EBS)" />
       
       {/* Open Graph tags para compartir */}
       <meta property="og:type" content="website" />
-      <meta property="og:title" content={title || 'Catálogo EBS Hermanos Marín'} />
+      <meta property="og:title" content={title || 'Catálogo e-business store(EBS)'} />
       <meta property="og:description" content={description || 'Sistema de gestión y catálogo de productos'} />
       
       {/* Prevenir indexación en desarrollo */}
@@ -189,8 +189,8 @@ function App() {
             <Route path="/" element={
               <>
                 <PageMeta 
-                  title="Catálogo Digital - EBS Hermanos Marín" 
-                  description="Catálogo digital de productos EBS Hermanos Marín. Ing. Edwin Marín 3004583117"
+                  title="Catálogo Digital - e-business store(EBS)" 
+                  description="Catálogo digital de productos e-business store(EBS). Ing. Edwin Marín 3004583117"
                 />
                 <CatalogoClientes />
               </>
@@ -200,8 +200,8 @@ function App() {
             <Route path="/catalogo-clientes" element={
               <>
                 <PageMeta 
-                  title="Catálogo Digital - EBS Hermanos Marín" 
-                  description="Catálogo digital de productos EBS Hermanos Marín. Ing. Edwin Marín 3004583117"
+                  title="Catálogo Digital - e-business store(EBS)" 
+                  description="Catálogo digital de productos e-business store(EBS). Ing. Edwin Marín 3004583117"
                 />
                 <CatalogoClientes />
               </>
@@ -210,7 +210,7 @@ function App() {
             {/* Login para equipo */}
             <Route path="/login" element={
               <>
-                <PageMeta title="Iniciar Sesión - EBS" description="Inicia sesión en el sistema EBS Hermanos Marín" />
+                <PageMeta title="Iniciar Sesión - e-business store(EBS)" description="Inicia sesión en el sistema e-business store(EBS)" />
                 {user ? <Navigate to="/facturacion" replace /> : <Login />}
               </>
             } />
@@ -219,7 +219,7 @@ function App() {
             <Route path="/facturacion" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'vendedor', 'inventario']}>
                 <>
-                  <PageMeta title="Facturación - EBS" description="Sistema de facturación EBS" />
+                  <PageMeta title="Facturación - e-business store(EBS)" description="Sistema de facturación e-business store(EBS)" />
                   <InvoiceScreen />
                 </>
               </ProtectedRoute>
@@ -229,7 +229,7 @@ function App() {
             <Route path="/nueva-factura" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'vendedor', 'inventario']}>
                 <>
-                  <PageMeta title="Nueva Factura - EBS" description="Crear nueva factura" />
+                  <PageMeta title="Nueva Factura - e-business store(EBS)" description="Crear nueva factura" />
                   <InvoiceScreen />
                 </>
               </ProtectedRoute>
@@ -239,7 +239,7 @@ function App() {
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <>
-                  <PageMeta title="Dashboard - EBS" description="Panel de control del sistema EBS" />
+                  <PageMeta title="Dashboard - e-business store(EBS)" description="Panel de control del sistema e-business store(EBS)" />
                   {user?.role === 'cliente' ? 
                     <CatalogoProductosWrapper mode="cliente" /> : 
                     <DashboardVentas />
@@ -252,7 +252,7 @@ function App() {
             <Route path="/facturas" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad', 'inventario', 'vendedor']}>
                 <>
-                  <PageMeta title="Facturas Guardadas - EBS" description="Gestión de facturas del sistema EBS" />
+                  <PageMeta title="Facturas Guardadas - e-business store(EBS)" description="Gestión de facturas del sistema e-business store(EBS)" />
                   <FacturasGuardadas />
                 </>
               </ProtectedRoute>
@@ -263,7 +263,7 @@ function App() {
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad', 'vendedor']}>
                 <>
                   <PageMeta 
-                    title="Rutas de Cobro Inteligentes - EBS" 
+                    title="Rutas de Cobro Inteligentes - e-business store(EBS)" 
                     description="Sistema de priorización para visitas de cobranza optimizadas" 
                   />
                   <RutasCobro />
@@ -275,7 +275,7 @@ function App() {
             <Route path="/dashboard-ventas" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad']}>
                 <>
-                  <PageMeta title="Dashboard de Ventas - EBS" description="Panel de control y análisis de ventas" />
+                  <PageMeta title="Dashboard de Ventas - e-business store(EBS)" description="Panel de control y análisis de ventas" />
                   <DashboardVentas />
                 </>
               </ProtectedRoute>
@@ -285,7 +285,7 @@ function App() {
             <Route path="/mapa-locales" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin']}>
                 <>
-                  <PageMeta title="Mapa de Locales - EBS" description="Mapa interactivo de locales y ubicaciones" />
+                  <PageMeta title="Mapa de Locales - e-business store(EBS)" description="Mapa interactivo de locales y ubicaciones" />
                   <MallMap />
                 </>
               </ProtectedRoute>
@@ -294,7 +294,7 @@ function App() {
             <Route path="/factura/:id" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'inventario', 'contabilidad', 'vendedor']}>
                 <>
-                  <PageMeta title="Detalle de Factura - EBS" description="Detalle completo de la factura" />
+                  <PageMeta title="Detalle de Factura - e-business store(EBS)" description="Detalle completo de la factura" />
                   <FacturaDetalle />
                 </>
               </ProtectedRoute>
@@ -303,7 +303,7 @@ function App() {
             <Route path="/reportes-cobros" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad', 'vendedor']}>
                 <>
-                  <PageMeta title="Reportes de Cobros - EBS" description="Reportes y análisis de cobros" />
+                  <PageMeta title="Reportes de Cobros - e-business store(EBS)" description="Reportes y análisis de cobros" />
                   <ReportesCobros />
                 </>
               </ProtectedRoute>
@@ -313,7 +313,7 @@ function App() {
             <Route path="/reporte-clientes-producto" element={
               <ProtectedRoute requiredRoles={['superadmin']}>
                 <>
-                  <PageMeta title="Clientes por Producto - EBS" description="Reporte de clientes que compraron cada producto" />
+                  <PageMeta title="Clientes por Producto - e-business store(EBS)" description="Reporte de clientes que compraron cada producto" />
                   <ReporteClientesPorProducto />
                 </>
               </ProtectedRoute>
@@ -323,7 +323,7 @@ function App() {
             <Route path="/gastos" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad', 'vendedor']}>
                 <>
-                  <PageMeta title="Gestión de Gastos - EBS" description="Control y análisis de gastos" />
+                  <PageMeta title="Gestión de Gastos - e-business store(EBS)" description="Control y análisis de gastos" />
                   <GastosScreen />
                 </>
               </ProtectedRoute>
@@ -333,7 +333,7 @@ function App() {
             <Route path="/cuentas-por-pagar" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad']}>
                 <>
-                  <PageMeta title="Cuentas por Pagar - EBS" description="Gestión de pagos a proveedores" />
+                  <PageMeta title="Cuentas por Pagar - e-business store(EBS)" description="Gestión de pagos a proveedores" />
                   <CuentasPorPagar />
                 </>
               </ProtectedRoute>
@@ -343,7 +343,7 @@ function App() {
             <Route path="/gastos-empresa" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad']}>
                 <>
-                  <PageMeta title="Gastos de la Empresa - EBS" description="Control de gastos operacionales" />
+                  <PageMeta title="Gastos de la Empresa - e-business store(EBS)" description="Control de gastos operacionales" />
                   <GastosEmpresa />
                 </>
               </ProtectedRoute>
@@ -353,7 +353,7 @@ function App() {
             <Route path="/dashboard-contabilidad" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad', 'vendedor']}>
                 <>
-                  <PageMeta title="Dashboard de Contabilidad - EBS" description="Panel de control contable" />
+                  <PageMeta title="Dashboard de Contabilidad - e-business store(EBS)" description="Panel de control contable" />
                   <ContabilidadScreen />
                 </>
               </ProtectedRoute>
@@ -362,7 +362,7 @@ function App() {
             <Route path="/catalogo" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'inventario', 'contabilidad', 'vendedor']}>
                 <>
-                  <PageMeta title="Catálogo de Productos - EBS" description="Gestión del catálogo de productos" />
+                  <PageMeta title="Catálogo de Productos - e-business store(EBS)" description="Gestión del catálogo de productos" />
                   {/* Modo de catálogo según rol: contabilidad en solo lectura */}
                   {user?.role === 'contabilidad' 
                     ? <CatalogoProductosWrapper mode="contabilidad" /> 
@@ -375,7 +375,7 @@ function App() {
             <Route path="/movimientos" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'inventario']}>
                 <>
-                  <PageMeta title="Historial de Movimientos - EBS" description="Auditoría de cambios de inventario" />
+                  <PageMeta title="Historial de Movimientos - e-business store(EBS)" description="Auditoría de cambios de inventario" />
                   <HistorialMovimientos />
                 </>
               </ProtectedRoute>
@@ -384,7 +384,7 @@ function App() {
             <Route path="/auditoria-productos" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'inventario']}>
                 <>
-                  <PageMeta title="Auditoría de Productos - EBS" description="Seguimiento de cambios en catálogo" />
+                  <PageMeta title="Auditoría de Productos - e-business store(EBS)" description="Seguimiento de cambios en catálogo" />
                   <AuditoriaProductos />
                 </>
               </ProtectedRoute>
@@ -393,7 +393,7 @@ function App() {
             <Route path="/gestion-inventario" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'inventario']}>
                 <>
-                  <PageMeta title="Gestión de Inventario - EBS" description="Control y gestión del inventario" />
+                  <PageMeta title="Gestión de Inventario - e-business store(EBS)" description="Control y gestión del inventario" />
                   <GestionInventario />
                 </>
               </ProtectedRoute>
@@ -403,7 +403,7 @@ function App() {
             <Route path="/gestion-pedidos" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'vendedor', 'inventario', 'contabilidad']}>
                 <>
-                  <PageMeta title="Gestión de Pedidos - EBS" description="Seguimiento y gestión de pedidos" />
+                  <PageMeta title="Gestión de Pedidos - e-business store(EBS)" description="Seguimiento y gestión de pedidos" />
                   <GestionPedidos mode="vendedor" />
                 </>
               </ProtectedRoute>
@@ -413,7 +413,7 @@ function App() {
             <Route path="/clientes" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'vendedor', 'inventario', 'contabilidad']}>
                 <>
-                  <PageMeta title="Gestión de Clientes - EBS" description="Administración de clientes del sistema" />
+                  <PageMeta title="Gestión de Clientes - e-business store(EBS)" description="Administración de clientes del sistema" />
                   <ClientesScreenWrapper />
                 </>
               </ProtectedRoute>
@@ -423,7 +423,7 @@ function App() {
             <Route path="/catalogo-cliente" element={
               <ProtectedRoute requiredRoles={['cliente']}>
                 <>
-                  <PageMeta title="Catálogo - EBS" description="Catálogo exclusivo para clientes" />
+                  <PageMeta title="Catálogo - e-business store(EBS)" description="Catálogo exclusivo para clientes" />
                   <CatalogoProductosWrapper mode="cliente" />
                 </>
               </ProtectedRoute>
@@ -432,7 +432,7 @@ function App() {
             {/* Rutas adicionales */}
             <Route path="/unauthorized" element={
               <>
-                <PageMeta title="Acceso No Autorizado - EBS" description="No tienes permisos para acceder a esta página" />
+                <PageMeta title="Acceso No Autorizado - e-business store(EBS)" description="No tienes permisos para acceder a esta página" />
                 <div className="flex justify-center items-center h-screen">
                   <div className="text-center">
                     <h1 className="text-2xl font-bold text-red-600">Acceso no autorizado</h1>
@@ -444,7 +444,7 @@ function App() {
             
             <Route path="*" element={
               <>
-                <PageMeta title="Página No Encontrada - EBS" description="La página que buscas no existe" />
+                <PageMeta title="Página No Encontrada - e-business store(EBS)" description="La página que buscas no existe" />
                 <NotFound />
               </>
             } />

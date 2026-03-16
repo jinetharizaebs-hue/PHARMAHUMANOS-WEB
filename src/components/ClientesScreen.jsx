@@ -263,7 +263,7 @@ const ClientesScreen = ({
 
       const datosExportacion = {
         metadata: {
-          sistema: "EBS Facturación",
+          sistema: "e-business store(EBS) Facturación",
           version: "1.0",
           fechaExportacion: new Date().toISOString(),
           totalClientes: data.length

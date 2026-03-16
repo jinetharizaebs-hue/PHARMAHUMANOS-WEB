@@ -1174,8 +1174,8 @@ const FacturaDetalle = () => {
           Gracias por su preferencia. Para cualquier aclaración, presentar esta cuenta de cobro.
         </p>
         <div className="footer-logo">
-          <span>EBS</span>
-          <small>E-business-store Marin</small>
+          <span>e-business store(EBS)</span>
+          <small>E-business Store Marin</small>
         </div>
       </div>
     </div>
