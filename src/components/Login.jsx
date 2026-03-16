@@ -22,21 +22,21 @@ const Login = () => {
     {
       id: 102,
       username: 'inv',
-      password: '1v3nt',
+      password: '1v3nt0',
       role: 'inventario',
       descripcion: 'Inventario - Gestion de catalogo, control de stock y pedidos.'
     },
     {
       id: 103,
-      username: 'EBS',
-      password: '801551',
+      username: 'mja',
+      password: 'mjaqwe',
       role: 'admin',
       descripcion: 'Admin - Acceso total para supervision y gestion.'
     },
     {
       id: 104,
-      username: 'caro',
-      password: 'caro123',
+      username: 'andre',
+      password: 'andreqwe',
       role: 'contabilidad',
       descripcion: 'Contabilidad - Reportes, control financiero y cuentas por pagar.'
     },
@@ -138,20 +138,7 @@ const Login = () => {
               </button>
             </form>
 
-            <div className="roles-info">
-              <h4>Roles y Accesos:</h4>
-              <div className="roles-list">
-                {users.map((user) => (
-                  <div key={user.id} className={`role-item role-${user.role}`}>
-                    <div className="role-header">
-                      <strong>{user.username}</strong>
-                      <span className="role-badge">{user.role}</span>
-                    </div>
-                    <p>{user.descripcion}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Se oculta el bloque de roles para no exponer usuarios ni permisos en la vista publica */}
           </div>
           
           <div className="catalog-section">
