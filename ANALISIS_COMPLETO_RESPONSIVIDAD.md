@@ -1,7 +1,7 @@
 # 📱 AUDITORÍA COMPLETA DE RESPONSIVIDAD - TODAS LAS VISTAS
 
 **Fecha:** 6 de Febrero de 2026  
-**Aplicación:** Distribuciones EBS Web  
+**Aplicación:** e-business store(EBS) Web  
 **Total de Componentes Analizados:** 31
 
 ---

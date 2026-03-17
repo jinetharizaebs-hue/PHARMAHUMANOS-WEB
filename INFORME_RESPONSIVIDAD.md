@@ -1,4 +1,4 @@
-# 📱 INFORME DE RESPONSIVIDAD - DISTRIBUCIONES EBS
+# 📱 INFORME DE RESPONSIVIDAD - e-business store(EBS)
 
 **Fecha:** 6 de Febrero de 2026  
 **Aplicación:** Pedido EBS Web  

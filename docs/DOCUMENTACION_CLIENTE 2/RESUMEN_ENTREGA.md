@@ -1,5 +1,5 @@
 # 📊 RESUMEN DE ENTREGA - DOCUMENTACIÓN CLIENTE
-## Sistema de Gestión Comercial Distribuciones EBS
+## Sistema de Gestión Comercial e-business store(EBS)
 
 **Fecha:** 2 de febrero de 2026  
 **Estado:** ✅ Lista para entregar
@@ -286,7 +286,7 @@ Con esta documentación, el cliente podrá:
 
 **Preparado por:**  
 Sistema de Documentación Automatizada  
-Distribuciones EBS
+e-business store(EBS)
 
 **Fecha:** 2 de febrero de 2026  
 **Versión:** 1.0

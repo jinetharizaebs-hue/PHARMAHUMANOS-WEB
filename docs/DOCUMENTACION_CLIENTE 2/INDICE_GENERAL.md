@@ -1,9 +1,9 @@
-# 📋 ÍNDICE GENERAL - DISTRIBUCIONES EBS
+# 📋 ÍNDICE GENERAL - e-business store(EBS)
 ## Sistema de Gestión Comercial para San Andresitos
 
 **Fecha:** 2 de febrero de 2026  
 **Cliente:** [Nombre del Cliente]  
-**Proveedor:** Edwin Marín - Distribuciones EBS  
+**Proveedor:** Edwin Marín - e-business store(EBS)  
 **Versión:** 1.0
 
 ---
@@ -121,7 +121,7 @@ Guías para usuarios del sistema.
 
 ## 📞 Contacto y Soporte
 
-**Proveedor:** Edwin Marín - Distribuciones EBS  
+**Proveedor:** Edwin Marín - e-business store(EBS)  
 **Email:** contacto@distribucionesebs.com  
 **Teléfono:** [Número de contacto]  
 **Soporte Técnico:** soporte@distribucionesebs.com  
@@ -138,4 +138,4 @@ Guías para usuarios del sistema.
 
 ---
 
-**Confidencialidad:** Este documento es de uso exclusivo del cliente y no debe ser compartido sin autorización expresa de Distribuciones EBS.
+**Confidencialidad:** Este documento es de uso exclusivo del cliente y no debe ser compartido sin autorización expresa de e-business store(EBS).

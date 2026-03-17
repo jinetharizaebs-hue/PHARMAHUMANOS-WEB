@@ -35,14 +35,14 @@ zip -r DOCUMENTACION_EBS_Cliente.zip DOCUMENTACION_CLIENTE/
 ```
 
 **Paso 2:** Enviar por email
-- **Asunto:** "Propuesta Sistema de Gestión Comercial - Distribuciones EBS"
+- **Asunto:** "Propuesta Sistema de Gestión Comercial - e-business store(EBS)"
 - **Adjunto:** DOCUMENTACION_EBS_Cliente.zip
 - **Mensaje:**
   ```
   Estimado/a [Nombre del Cliente]:
 
   Adjunto encontrará la documentación completa de nuestra propuesta para 
-  implementar el Sistema de Gestión Comercial Distribuciones EBS.
+  implementar el Sistema de Gestión Comercial e-business store(EBS).
 
   📁 El paquete incluye:
   - Resumen Ejecutivo (2 páginas)
@@ -57,7 +57,7 @@ zip -r DOCUMENTACION_EBS_Cliente.zip DOCUMENTACION_CLIENTE/
 
   Cordialmente,
   Edwin Marín
-  Distribuciones EBS
+  e-business store(EBS)
   📱 [Teléfono]
   📧 [Email]
   ```
@@ -300,7 +300,7 @@ Has creado un paquete de documentación **profesional, completo y persuasivo**.
 ---
 
 **Contacto del Autor:**  
-Edwin Marín - Distribuciones EBS  
+Edwin Marín - e-business store(EBS)  
 📧 contacto@distribucionesebs.com  
 📱 [Número]
 

@@ -1,5 +1,5 @@
 # 📦 PAQUETE DE DOCUMENTACIÓN
-## Sistema de Gestión Comercial Distribuciones EBS
+## Sistema de Gestión Comercial e-business store(EBS)
 
 **Fecha de entrega:** 2 de febrero de 2026  
 **Cliente:** [Nombre del Cliente]  
@@ -9,7 +9,7 @@
 
 ## 🎯 Bienvenido
 
-Este paquete contiene **toda la documentación** necesaria para entender, implementar y operar el Sistema de Gestión Comercial Distribuciones EBS.
+Este paquete contiene **toda la documentación** necesaria para entender, implementar y operar el Sistema de Gestión Comercial e-business store(EBS).
 
 ---
 
@@ -104,7 +104,7 @@ DOCUMENTACION_CLIENTE/
 ¿Preguntas sobre la documentación?
 
 **Edwin Marín**  
-Distribuciones EBS  
+e-business store(EBS)  
 📧 contacto@distribucionesebs.com  
 📱 [WhatsApp]  
 ☎️ [Teléfono]
@@ -117,7 +117,7 @@ Sábados: 10:00 AM - 6:00 PM
 
 ## 🔒 Confidencialidad
 
-⚠️ **IMPORTANTE:** Esta documentación es **confidencial** y de uso exclusivo de [Nombre del Cliente]. No debe ser compartida, copiada o distribuida sin autorización expresa por escrito de Distribuciones EBS.
+⚠️ **IMPORTANTE:** Esta documentación es **confidencial** y de uso exclusivo de [Nombre del Cliente]. No debe ser compartida, copiada o distribuida sin autorización expresa por escrito de e-business store(EBS).
 
 ---
 
@@ -147,7 +147,7 @@ Marque los documentos que ya revisó:
 ## 💡 Próximos Pasos Sugeridos
 
 1. ✅ **Revisar documentación ejecutiva** (30 min)
-2. ✅ **Agendar reunión de aclaración** con Distribuciones EBS
+2. ✅ **Agendar reunión de aclaración** con e-business store(EBS)
 3. ✅ **Compartir con equipo clave** (gerencia, IT, operaciones)
 4. ✅ **Validar presupuesto** internamente
 5. ✅ **Tomar decisión** de implementación
@@ -156,6 +156,6 @@ Marque los documentos que ya revisó:
 
 ---
 
-**Gracias por confiar en Distribuciones EBS**
+**Gracias por confiar en e-business store(EBS)**
 
 *Transformando la gestión comercial de San Andresitos*

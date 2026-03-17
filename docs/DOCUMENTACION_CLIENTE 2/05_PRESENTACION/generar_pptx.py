@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script para generar presentación PowerPoint profesional
-Sistema de Gestión Comercial Distribuciones EBS
+Sistema de Gestión Comercial e-business store(EBS)
 """
 
 from pptx import Presentation
@@ -88,7 +88,7 @@ def crear_presentacion():
     # Subtítulo
     subtitle_box = slide1.shapes.add_textbox(Inches(0.5), Inches(3.5), Inches(9), Inches(1))
     subtitle_frame = subtitle_box.text_frame
-    subtitle_frame.text = "Distribuciones EBS"
+    subtitle_frame.text = "e-business store(EBS)"
     subtitle_frame.paragraphs[0].font.size = Pt(48)
     subtitle_frame.paragraphs[0].font.bold = True
     subtitle_frame.paragraphs[0].font.color.rgb = COLOR_SECUNDARIO
@@ -226,7 +226,7 @@ def crear_presentacion():
     
     contact_box = slide12.shapes.add_textbox(Inches(1), Inches(4.5), Inches(8), Inches(2))
     contact_frame = contact_box.text_frame
-    contact_frame.text = "Edwin Marín\nDistribuciones EBS\n📧 contacto@distribucionesebs.com"
+    contact_frame.text = "Edwin Marín\ne-business store(EBS)\n📧 contacto@distribucionesebs.com"
     contact_frame.paragraphs[0].font.size = Pt(20)
     contact_frame.paragraphs[0].font.color.rgb = COLOR_BLANCO
     contact_frame.paragraphs[0].alignment = PP_ALIGN.CENTER

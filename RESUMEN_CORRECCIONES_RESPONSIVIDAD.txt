@@ -2,7 +2,7 @@
               ✅ RESUMEN DE CORRECCIONES DE RESPONSIVIDAD
 ================================================================================
 
-APLICACIÓN: Distribuciones EBS Web
+APLICACIÓN: e-business store(EBS) Web
 FECHA: 6 de Febrero de 2026
 ESTADO: ✅ TODAS LAS CORRECCIONES IMPLEMENTADAS
 
@@ -189,7 +189,7 @@ Si encuentras algún problema:
 ✨ ¡TODAS LAS CORRECCIONES COMPLETADAS CON ÉXITO! ✨
 ================================================================================
 
-Tu aplicación Distribuciones EBS ahora es:
+Tu aplicación e-business store(EBS) ahora es:
 ✅ Responsive en desktop (1920px)
 ✅ Responsive en tablet (768px)
 ✅ Responsive en móvil (375px)

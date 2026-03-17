@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Presentacion - Plan de Mejoramiento</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --brand: #0f766e;
+      --accent: #0ea5e9;
+      --line: #dbe4ee;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #eef5ff 0%, #f9fbff 100%);
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #0b1220;
+      color: #e5e7eb;
+      padding: 10px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+
+    .toolbar button {
+      border: 1px solid #334155;
+      background: #111827;
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 7px 12px;
+      cursor: pointer;
+    }
+
+    .deck {
+      width: min(1100px, 96vw);
+      margin: 18px auto 26px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .slide {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      min-height: 640px;
+      padding: 42px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      page-break-after: always;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #0b3d3a;
+      background: #ccfbf1;
+      border: 1px solid #99f6e4;
+      border-radius: 999px;
+      padding: 6px 10px;
+      margin-bottom: 18px;
+    }
+
+    h1, h2 {
+      margin: 0 0 14px;
+      line-height: 1.15;
+    }
+
+    h1 {
+      font-size: 46px;
+      color: #111827;
+    }
+
+    h2 {
+      font-size: 34px;
+      color: #0b3d3a;
+    }
+
+    .lead {
+      font-size: 20px;
+      color: var(--muted);
+      max-width: 850px;
+      margin: 0;
+    }
+
+    .meta {
+      margin-top: 26px;
+      display: grid;
+      gap: 10px;
+      font-size: 20px;
+    }
+
+    .meta strong { color: #0f172a; }
+
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      background: #fcfdff;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      color: #1f2937;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 20px;
+      line-height: 1.45;
+    }
+
+    p {
+      font-size: 20px;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .timeline {
+      margin-top: 16px;
+      border-left: 4px solid var(--accent);
+      padding-left: 16px;
+      display: grid;
+      gap: 12px;
+      font-size: 19px;
+    }
+
+    .rubric {
+      margin-top: 14px;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 17px;
+    }
+
+    .rubric th,
+    .rubric td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .rubric th {
+      background: #ecfeff;
+      color: #0c4a6e;
+    }
+
+    .foot {
+      margin-top: 26px;
+      font-size: 16px;
+      color: #64748b;
+    }
+
+    @media (max-width: 900px) {
+      .slide { padding: 24px; min-height: auto; }
+      h1 { font-size: 34px; }
+      h2 { font-size: 28px; }
+      .lead, p, ul { font-size: 18px; }
+      .cols { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      .toolbar { display: none; }
+      body { background: #fff; }
+      .deck { width: auto; margin: 0; }
+      .slide {
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        min-height: 100vh;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div>Presentacion lista para clase y entrega institucional</div>
+    <button onclick="window.print()">Imprimir / Guardar PDF</button>
+  </div>
+
+  <main class="deck">
+    <section class="slide">
+      <span class="tag">Plan de Mejoramiento</span>
+      <h1>Proyecto con Vite, Base de Datos y SQL</h1>
+      <p class="lead">Ruta de recuperacion academica para fortalecer competencias tecnicas en desarrollo web y gestion de datos.</p>
+      <div class="meta">
+        <div><strong>Docente:</strong> Ing. Edwin Marin</div>
+        <div><strong>Institucion:</strong> SENA</div>
+        <div><strong>Duracion:</strong> 2 semanas</div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <span class="tag">Objetivo</span>
+      <h2>Objetivo General</h2>
+      <p>Construir una aplicacion web funcional con Vite conectada a base de datos, aplicando consultas SQL para operaciones de registro, consulta, actualizacion y eliminacion de informacion.</p>
+      <div class="cols">
+        <article class="card">
+          <h3>Competencias a desarrollar</h3>
+          <ul>
+            <li>Crear proyectos modernos con Vite.</li>
+            <li>Modelar y crear tablas en SQL.</li>
+            <li>Conectar frontend con base de datos.</li>
+            <li>Implementar CRUD completo.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Resultado esperado</h3>
+          <ul>
+            <li>Aplicacion funcional y estable.</li>
+            <li>Consultas SQL documentadas.</li>
+            <li>Repositorio con evidencias tecnicas.</li>
+            <li>Presentacion final del proyecto.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="slide">
+      <span class="tag">Alcance</span>
+      <h2>Entregables Obligatorios</h2>
+      <ul>
+        <li>Repositorio GitHub con codigo fuente.</li>
+        <li>Carpeta <code>sql/</code> con <code>schema.sql</code>, <code>seed.sql</code> y <code>consultas.sql</code>.</li>
+        <li>README con instalacion, ejecucion y descripcion tecnica.</li>
+        <li>Video de 3 a 5 minutos demostrando funcionamiento.</li>
+      </ul>
+      <div class="card" style="margin-top:18px;">
+        <h3>Requisitos minimos</h3>
+        <ul>
+          <li>Minimo 3 tablas relacionadas.</li>
+          <li>Minimo 8 consultas SQL diferentes.</li>
+          <li>CRUD funcional desde interfaz web.</li>
+          <li>Aplicacion ejecutando sin errores criticos.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="slide">
+      <span class="tag">Cronograma</span>
+      <h2>Semana 1</h2>
+      <div class="timeline">
+        <div><strong>Dia 1:</strong> Configuracion de entorno y creacion del proyecto Vite.</div>
+        <div><strong>Dia 2:</strong> Definicion del problema y modelado de base de datos.</div>
+        <div><strong>Dia 3:</strong> Creacion de tablas e insercion de datos de prueba.</div>
+        <div><strong>Dia 4:</strong> Consultas SQL: SELECT, WHERE, ORDER BY, JOIN.</div>
+        <div><strong>Dia 5:</strong> Conexion de la aplicacion y visualizacion de datos.</div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <span class="tag">Cronograma</span>
+      <h2>Semana 2</h2>
+      <div class="timeline">
+        <div><strong>Dia 6:</strong> Formulario de creacion de registros (INSERT).</div>
+        <div><strong>Dia 7:</strong> Edicion de registros (UPDATE).</div>
+        <div><strong>Dia 8:</strong> Eliminacion controlada de registros (DELETE).</div>
+        <div><strong>Dia 9:</strong> Busqueda, filtros y mejora de experiencia.</div>
+        <div><strong>Dia 10-12:</strong> Validaciones, manejo de errores y ajustes UI.</div>
+        <div><strong>Dia 13:</strong> Documentacion y evidencias.</div>
+        <div><strong>Dia 14:</strong> Sustentacion y entrega final.</div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <span class="tag">Evaluacion</span>
+      <h2>Rubrica de Entrega (100 puntos)</h2>
+      <table class="rubric">
+        <thead>
+          <tr>
+            <th>Criterio</th>
+            <th>Peso</th>
+            <th>Meta esperada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Configuracion del proyecto</td>
+            <td>10%</td>
+            <td>Estructura clara y app ejecutando correctamente.</td>
+          </tr>
+          <tr>
+            <td>Diseno de base de datos</td>
+            <td>15%</td>
+            <td>Tablas y relaciones coherentes.</td>
+          </tr>
+          <tr>
+            <td>Consultas SQL</td>
+            <td>20%</td>
+            <td>Consultas correctas y variadas.</td>
+          </tr>
+          <tr>
+            <td>Integracion app + base de datos</td>
+            <td>15%</td>
+            <td>Conexion funcional y estable.</td>
+          </tr>
+          <tr>
+            <td>CRUD completo</td>
+            <td>20%</td>
+            <td>Crear, leer, actualizar y eliminar funcionando.</td>
+          </tr>
+          <tr>
+            <td>Validaciones y manejo de errores</td>
+            <td>10%</td>
+            <td>Mensajes claros y control de entradas.</td>
+          </tr>
+          <tr>
+            <td>Documentacion y sustentacion</td>
+            <td>10%</td>
+            <td>README completo y explicacion tecnica.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="slide">
+      <span class="tag">Cierre</span>
+      <h2>Plan de Mejoramiento - Compromiso</h2>
+      <p>Este plan busca garantizar la recuperacion de los aprendizajes esperados, promoviendo autonomia, disciplina y calidad tecnica en el desarrollo del proyecto.</p>
+      <div class="cols" style="margin-top:22px;">
+        <article class="card">
+          <h3>Compromisos del estudiante</h3>
+          <ul>
+            <li>Cumplir cronograma y avances diarios.</li>
+            <li>Entregar evidencias verificables.</li>
+            <li>Aplicar buenas practicas en codigo y SQL.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>Acompanamiento docente</h3>
+          <ul>
+            <li>Seguimiento semanal por hitos.</li>
+            <li>Retroalimentacion tecnica oportuna.</li>
+            <li>Evaluacion con rubrica transparente.</li>
+          </ul>
+        </article>
+      </div>
+      <p class="foot">Docente responsable: Ing. Edwin Marin | Institucion: SENA</p>
+    </section>
+  </main>
+</body>
+</html>

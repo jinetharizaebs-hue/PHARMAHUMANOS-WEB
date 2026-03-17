@@ -2,7 +2,7 @@
 
 **Estado:** 🟢 **100% COMPLETO**  
 **Fecha:** 2 de febrero de 2026  
-**Sistema:** Distribuciones EBS
+**Sistema:** e-business store(EBS)
 
 ---
 
@@ -123,7 +123,7 @@ zip -r DOCUMENTACION_EBS_Cliente.zip DOCUMENTACION_CLIENTE/
 ```
 
 **Enviar por email:**
-- Asunto: "Propuesta Sistema de Gestión Comercial - Distribuciones EBS"
+- Asunto: "Propuesta Sistema de Gestión Comercial - e-business store(EBS)"
 - Adjunto: DOCUMENTACION_EBS_Cliente.zip (600 KB)
 - Mensaje de presentación profesional
 
@@ -233,7 +233,7 @@ Con esta documentación completa:
 
 ## 📞 SOPORTE Y CONTACTO
 
-**Edwin Marín - Distribuciones EBS**
+**Edwin Marín - e-business store(EBS)**
 
 📧 contacto@distribucionesebs.com  
 📱 3004583117 
@@ -260,6 +260,6 @@ Esta documentación es:
 ---
 
 **Documento generado automáticamente**  
-Distribuciones EBS | 2 de febrero de 2026
+e-business store(EBS) | 2 de febrero de 2026
 
 *Confidencial - Uso exclusivo del cliente*
