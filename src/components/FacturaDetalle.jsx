@@ -192,6 +192,11 @@ const FacturaDetalle = () => {
               flex-direction: column;
               height: 100%;
             }
+            .seccion-transparente {
+              border: none;
+              background: transparent;
+              visibility: hidden;
+            }
             .titulo-seccion {
               text-align: center;
               font-weight: bold;
@@ -452,9 +457,9 @@ const FacturaDetalle = () => {
         </head>
         <body>
           <div class="pagina-oficio">
-              <!-- ORIGINAL - PARA EL ARCHIVO -->
+              <!-- COPIA - PARA EL CLIENTE -->
             <div class="seccion-cuenta">
-              <div class="titulo-seccion">ORIGINAL - PARA EL ARCHIVO</div>
+              <div class="titulo-seccion">COPIA - PARA EL CLIENTE</div>
               <div class="encabezado">
                 <div class="empresa-info">
                   <div class="empresa-logo-wrap">
@@ -540,13 +545,15 @@ const FacturaDetalle = () => {
               
               <div class="footer">
                 <div>Gracias por su preferencia.</div>
-                <div class="footer-payment">NEQUI, TU LLAVE <span class="llave-nequi"></span>, CUENTA  # </div>
+                <div class="footer-payment">NEQUI Y DAVIPLATA: <span class="llave-nequi">3016017182</span></div>
+                <div class="footer-payment">BREVE: <span class="llave-nequi">80741957</span></div>
+                <div class="footer-payment">BANCOLOMBIA AHORROS: <span class="llave-nequi">09414650365</span></div>
                 <div class="logo">Distribuidora Farmaceutica Maranatha J.A</div>
               </div>
             </div>
             
-              <!-- COPIA - PARA EL CLIENTE -->
-            <div class="seccion-cuenta">
+              <!-- MITAD DERECHA OCULTA PARA CONSERVAR FORMATO -->
+            <div class="seccion-cuenta seccion-transparente" aria-hidden="true">
               <div class="titulo-seccion">COPIA - PARA EL CLIENTE</div>
               <div class="encabezado">
                 <div class="empresa-info">
@@ -633,7 +640,9 @@ const FacturaDetalle = () => {
               
               <div class="footer">
                 <div>Gracias por su preferencia.</div>
-                <div class="footer-payment">NEQUI, TU LLAVE <span class="llave-nequi"></span>, CUENTA  # </div>
+                <div class="footer-payment">NEQUI Y DAVIPLATA: <span class="llave-nequi">3016017182</span></div>
+                <div class="footer-payment">BREVE: <span class="llave-nequi">80741957</span></div>
+                <div class="footer-payment">BANCOLOMBIA AHORROS: <span class="llave-nequi">09414650365</span></div>
                 <div class="logo">Distribuidora Farmaceutica Maranatha J.A</div>
               </div>
             </div>
