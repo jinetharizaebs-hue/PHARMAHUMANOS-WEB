@@ -295,7 +295,7 @@ const ImportExportActions = ({ productos, productosFiltrados, setProductos }) =>
 const ReporteInventario = ({ productos }) => {
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
   const [filtroEstado, setFiltroEstado] = useState('activos');
-  const categorias = ['Todas', 'Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud Sexual', 'Primeros Auxilios', 'Cuidado Personal', 'Antigripal Cuidado Respiratorio'];
+  const categorias = ['Todas', 'Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas oftálmicas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud sexual e íntima', 'Primeros Auxilios', 'Cuidado Personal', 'Antigripal Cuidado Respiratorio'];
 
   // Filtrar productos según los filtros seleccionados
   const productosFiltrados = productos.filter(producto => {
@@ -525,7 +525,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
   const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
   const [mostrarAccionesMobile, setMostrarAccionesMobile] = useState(false);
 
-  const categorias = ['Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud Sexual', 'Primeros Auxilios', 'Cuidado Personal', 'Antigripal Cuidado Respiratorio'];
+  const categorias = ['Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas oftálmicas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud sexual e íntima', 'Primeros Auxilios', 'Cuidado Personal', 'Antigripal Cuidado Respiratorio'];
 
   // Cargar productos desde Supabase
   useEffect(() => {
