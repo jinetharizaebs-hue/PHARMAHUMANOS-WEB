@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import './ContabilidadScreen.css';
 
 const ContabilidadScreen = () => {
@@ -26,96 +27,101 @@ const ContabilidadScreen = () => {
     basePP: ''
   });
   const [editandoRegistro, setEditandoRegistro] = useState(null);
+  const [errorConexion, setErrorConexion] = useState(null);
 
-  // Datos de ejemplo expandidos
-  const datosEjemplo = {
-    reporteCartera: [
-      {
-        id: 1,
-        distribuidora: "DISTRIBUIDORA FARMACEUTICA ROMA",
-        cliente: "BERNAL DELGADILLO CAROLINA | SUPER VILLA JAVIER",
-        nit: "10231877",
-        documentos: [
-          {
-            id: 1,
-            refDoc: "500787688",
-            clase: "RV",
-            fechaBase: "23/09/2025",
-            fechaPago: "07/11/2025",
-            demora: -15,
-            importe: 35806685,
-            basePP: 43806685,
-            descuento: 4380669,
-            aPagar: 31426017,
-            estado: "pendiente"
-          },
-          {
-            id: 2,
-            refDoc: "4400077966",
-            clase: "NC",
-            fechaBase: "",
-            fechaPago: "",
-            demora: "",
-            importe: -12861150,
-            basePP: "",
-            descuento: "",
-            aPagar: -12861150,
-            estado: "pagado"
-          }
-        ],
-        total: 18854646
-      },
-      {
-        id: 2,
-        distribuidora: "GAIACORP S.A.S.",
-        cliente: "GAIACORP S.A.S. SUCURSAL BOGOTA",
-        nit: "52469246",
-        documentos: [
-          {
-            id: 3,
-            refDoc: "500787689",
-            clase: "Factura",
-            fechaBase: "20/10/2025",
-            fechaPago: "05/11/2025",
-            demora: -10,
-            importe: 25000000,
-            basePP: 25000000,
-            descuento: 1250000,
-            aPagar: 23750000,
-            estado: "pendiente"
-          }
-        ],
-        total: 23750000
-      }
-    ],
-    clientes: [
-      { id: 'todos', nombre: 'Todos los clientes' },
-      { id: '10231877', nombre: 'DISTRIBUIDORA FARMACEUTICA ROMA' },
-      { id: '52469246', nombre: 'GAIACORP S.A.S.' }
-    ],
-    pagosMensuales: [
-      { mes: 0, anio: 2025, totalPagado: 45000000, totalPendiente: 25000000, documentosPagados: 45, documentosPendientes: 12 },
-      { mes: 1, anio: 2025, totalPagado: 52000000, totalPendiente: 18000000, documentosPagados: 52, documentosPendientes: 8 },
-    ],
-    metricasDashboard: {
-      carteraTotal: 38681580.66,
-      clientesActivos: 12,
-      documentosPendientes: 47,
-      promedioDemora: -15,
-      moraCritica: 8,
-      moraAlerta: 12,
-      moraNormal: 27,
-      eficienciaCobro: 78.5
+  const formatearFecha = (fechaISO) => {
+    if (!fechaISO) return '';
+    const partes = fechaISO.split('-');
+    if (partes.length !== 3) return fechaISO;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  };
+
+  const calcularDemoraDesdeHoy = (fechaVencimiento) => {
+    if (!fechaVencimiento) return null;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const venc = new Date(fechaVencimiento + 'T00:00:00');
+    const diffMs = venc.getTime() - hoy.getTime();
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  };
+
+  const calcularEficiencia = (facturas) => {
+    if (!facturas.length) return 0;
+    const totalPagado = facturas.reduce((s, f) => s + (parseFloat(f.pagado) || 0), 0);
+    const totalGeneral = facturas.reduce((s, f) => s + (parseFloat(f.total) || 0), 0);
+    if (!totalGeneral) return 0;
+    return Math.round((totalPagado / totalGeneral) * 1000) / 10;
+  };
+
+  const cargarDatos = async () => {
+    setCargando(true);
+    setErrorConexion(null);
+    try {
+      const { data: facturas, error } = await supabase
+        .from('facturas_proveedores')
+        .select('*, proveedores(id, nombre, nit)')
+        .order('fecha_vencimiento', { ascending: true });
+
+      if (error) throw error;
+
+      const mapaProveedores = {};
+      (facturas || []).forEach(f => {
+        const prov = f.proveedores;
+        if (!prov) return;
+        const nit = prov.nit;
+        if (!mapaProveedores[nit]) {
+          mapaProveedores[nit] = {
+            id: prov.id,
+            distribuidora: prov.nombre,
+            cliente: prov.nombre,
+            nit,
+            documentos: [],
+            total: 0
+          };
+        }
+        const demora = calcularDemoraDesdeHoy(f.fecha_vencimiento);
+        const aPagar = parseFloat(f.saldo) || 0;
+        mapaProveedores[nit].documentos.push({
+          id: f.id,
+          refDoc: f.numero_factura,
+          clase: f.clase,
+          fechaBase: formatearFecha(f.fecha_emision),
+          fechaPago: formatearFecha(f.fecha_vencimiento),
+          demora,
+          importe: parseFloat(f.total) || 0,
+          basePP: parseFloat(f.subtotal) || 0,
+          descuento: parseFloat(f.retencion) || 0,
+          aPagar,
+          estado: f.estado
+        });
+        mapaProveedores[nit].total += aPagar;
+      });
+
+      const reporteCartera = Object.values(mapaProveedores);
+      const clientes = [
+        { id: 'todos', nombre: 'Todos los clientes' },
+        ...reporteCartera.map(c => ({ id: c.nit, nombre: c.distribuidora }))
+      ];
+
+      setDatosContabilidad({
+        reporteCartera,
+        clientes,
+        metricasDashboard: { eficienciaCobro: calcularEficiencia(facturas || []) }
+      });
+    } catch (err) {
+      setErrorConexion('Error al cargar datos: ' + err.message);
+      setDatosContabilidad({
+        reporteCartera: [],
+        clientes: [{ id: 'todos', nombre: 'Todos los clientes' }],
+        metricasDashboard: { eficienciaCobro: 0 }
+      });
+    } finally {
+      setCargando(false);
     }
   };
 
   useEffect(() => {
-    setCargando(true);
-    const timer = setTimeout(() => {
-      setDatosContabilidad(datosEjemplo);
-      setCargando(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    cargarDatos();
   }, []);
 
   // Funciones para manejar el formulario
@@ -158,73 +164,61 @@ const ContabilidadScreen = () => {
     return distribuidora.trim() && cliente.trim() && nit.trim() && refDoc.trim();
   };
 
-  const agregarNuevoRegistro = () => {
+  const agregarNuevoRegistro = async () => {
     if (!validarCamposObligatorios()) {
       alert('Por favor complete los campos obligatorios: Distribuidora, Cliente, NIT y REF DOC');
       return;
     }
 
-    const aPagar = calcularAPagar();
-    const fechaBaseFormateada = nuevoRegistro.fechaBase ? 
-      new Date(nuevoRegistro.fechaBase).toLocaleDateString('es-CO') : '';
-    const fechaPagoFormateada = nuevoRegistro.fechaPago ? 
-      new Date(nuevoRegistro.fechaPago).toLocaleDateString('es-CO') : '';
-    
-    const demora = calcularDemora(fechaBaseFormateada, fechaPagoFormateada);
+    try {
+      // Buscar o crear proveedor por NIT
+      let proveedorId;
+      const { data: provExistente } = await supabase
+        .from('proveedores')
+        .select('id')
+        .eq('nit', nuevoRegistro.nit)
+        .maybeSingle();
 
-    // Crear nuevo documento
-    const nuevoDocumento = {
-      id: Date.now(),
-      refDoc: nuevoRegistro.refDoc,
-      clase: nuevoRegistro.clase,
-      fechaBase: fechaBaseFormateada,
-      fechaPago: fechaPagoFormateada,
-      demora: demora,
-      importe: parseFloat(nuevoRegistro.importe) || 0,
-      basePP: nuevoRegistro.basePP ? parseFloat(nuevoRegistro.basePP) : 0,
-      descuento: parseFloat(nuevoRegistro.descuento) || 0,
-      aPagar: aPagar,
-      estado: aPagar > 0 ? 'pendiente' : 'pagado'
-    };
-
-    setDatosContabilidad(prev => {
-      if (!prev) return prev;
-      
-      const nuevoEstado = JSON.parse(JSON.stringify(prev));
-      
-      // Buscar si el cliente ya existe
-      const clienteExistente = nuevoEstado.reporteCartera.find(cliente => cliente.nit === nuevoRegistro.nit);
-      
-      if (clienteExistente) {
-        // Agregar documento al cliente existente
-        clienteExistente.documentos.push(nuevoDocumento);
-        clienteExistente.total += aPagar;
+      if (provExistente) {
+        proveedorId = provExistente.id;
       } else {
-        // Crear nuevo cliente
-        const nuevoCliente = {
-          id: Date.now() + 1,
-          distribuidora: nuevoRegistro.distribuidora,
-          cliente: nuevoRegistro.cliente,
-          nit: nuevoRegistro.nit,
-          documentos: [nuevoDocumento],
-          total: aPagar
-        };
-        nuevoEstado.reporteCartera.push(nuevoCliente);
-        
-        // Agregar a la lista de clientes para filtros
-        if (!nuevoEstado.clientes.find(c => c.id === nuevoRegistro.nit)) {
-          nuevoEstado.clientes.push({
-            id: nuevoRegistro.nit,
-            nombre: nuevoRegistro.distribuidora
-          });
-        }
+        const { data: nuevoProv, error: errProv } = await supabase
+          .from('proveedores')
+          .insert({ nombre: nuevoRegistro.distribuidora, nit: nuevoRegistro.nit })
+          .select('id')
+          .single();
+        if (errProv) throw errProv;
+        proveedorId = nuevoProv.id;
       }
 
-      return nuevoEstado;
-    });
+      const importe = parseFloat(nuevoRegistro.importe) || 0;
+      const descuento = parseFloat(nuevoRegistro.descuento) || 0;
+      const aPagar = importe - descuento;
 
-    limpiarFormulario();
-    alert('Registro agregado exitosamente!');
+      const { error: errFact } = await supabase
+        .from('facturas_proveedores')
+        .insert({
+          proveedor_id: proveedorId,
+          numero_factura: nuevoRegistro.refDoc,
+          fecha_emision: nuevoRegistro.fechaBase || null,
+          fecha_vencimiento: nuevoRegistro.fechaPago || null,
+          clase: nuevoRegistro.clase,
+          subtotal: parseFloat(nuevoRegistro.basePP) || importe,
+          iva: 0,
+          retencion: descuento,
+          total: importe,
+          pagado: 0,
+          saldo: aPagar,
+          estado: aPagar > 0 ? 'pendiente' : 'pagada'
+        });
+      if (errFact) throw errFact;
+
+      await cargarDatos();
+      limpiarFormulario();
+      alert('Registro guardado exitosamente!');
+    } catch (err) {
+      alert('Error al guardar: ' + err.message);
+    }
   };
 
   const editarRegistro = (documento, cliente) => {
@@ -244,85 +238,55 @@ const ContabilidadScreen = () => {
     setMostrarFormulario(true);
   };
 
-  const actualizarRegistro = () => {
+  const actualizarRegistro = async () => {
     if (!editandoRegistro || !datosContabilidad) return;
 
-    const aPagar = calcularAPagar();
-    const fechaBaseFormateada = nuevoRegistro.fechaBase ? 
-      new Date(nuevoRegistro.fechaBase).toLocaleDateString('es-CO') : '';
-    const fechaPagoFormateada = nuevoRegistro.fechaPago ? 
-      new Date(nuevoRegistro.fechaPago).toLocaleDateString('es-CO') : '';
-    
-    const demora = calcularDemora(fechaBaseFormateada, fechaPagoFormateada);
+    try {
+      const importe = parseFloat(nuevoRegistro.importe) || 0;
+      const descuento = parseFloat(nuevoRegistro.descuento) || 0;
+      const aPagar = importe - descuento;
 
-    setDatosContabilidad(prev => {
-      const nuevoEstado = JSON.parse(JSON.stringify(prev));
-      const cliente = nuevoEstado.reporteCartera.find(c => c.nit === editandoRegistro.cliente.nit);
-      
-      if (cliente) {
-        const documentoIndex = cliente.documentos.findIndex(d => d.id === editandoRegistro.documento.id);
-        if (documentoIndex !== -1) {
-          // Restar el valor anterior del total
-          cliente.total -= cliente.documentos[documentoIndex].aPagar;
-          
-          // Actualizar documento
-          cliente.documentos[documentoIndex] = {
-            ...cliente.documentos[documentoIndex],
-            refDoc: nuevoRegistro.refDoc,
-            clase: nuevoRegistro.clase,
-            fechaBase: fechaBaseFormateada,
-            fechaPago: fechaPagoFormateada,
-            demora: demora,
-            importe: parseFloat(nuevoRegistro.importe) || 0,
-            basePP: nuevoRegistro.basePP ? parseFloat(nuevoRegistro.basePP) : 0,
-            descuento: parseFloat(nuevoRegistro.descuento) || 0,
-            aPagar: aPagar,
-            estado: aPagar > 0 ? 'pendiente' : 'pagado'
-          };
-          
-          // Sumar el nuevo valor al total
-          cliente.total += aPagar;
-        }
-      }
+      const { error } = await supabase
+        .from('facturas_proveedores')
+        .update({
+          numero_factura: nuevoRegistro.refDoc,
+          fecha_emision: nuevoRegistro.fechaBase || null,
+          fecha_vencimiento: nuevoRegistro.fechaPago || null,
+          clase: nuevoRegistro.clase,
+          subtotal: parseFloat(nuevoRegistro.basePP) || importe,
+          retencion: descuento,
+          total: importe,
+          saldo: aPagar,
+          estado: aPagar > 0 ? 'pendiente' : 'pagada'
+        })
+        .eq('id', editandoRegistro.documento.id);
 
-      return nuevoEstado;
-    });
+      if (error) throw error;
 
-    limpiarFormulario();
-    alert('Registro actualizado exitosamente!');
+      await cargarDatos();
+      limpiarFormulario();
+      alert('Registro actualizado exitosamente!');
+    } catch (err) {
+      alert('Error al actualizar: ' + err.message);
+    }
   };
 
-  const eliminarRegistro = (documentoId, clienteNit) => {
+  const eliminarRegistro = async (documentoId, clienteNit) => {
     if (!window.confirm('¿Está seguro de que desea eliminar este documento?')) {
       return;
     }
 
-    setDatosContabilidad(prev => {
-      if (!prev) return prev;
-      
-      const nuevoEstado = JSON.parse(JSON.stringify(prev));
-      const cliente = nuevoEstado.reporteCartera.find(c => c.nit === clienteNit);
-      
-      if (cliente) {
-        const documentoIndex = cliente.documentos.findIndex(d => d.id === documentoId);
-        if (documentoIndex !== -1) {
-          // Restar del total
-          cliente.total -= cliente.documentos[documentoIndex].aPagar;
-          // Eliminar documento
-          cliente.documentos.splice(documentoIndex, 1);
-          
-          // Si el cliente no tiene más documentos, eliminarlo
-          if (cliente.documentos.length === 0) {
-            nuevoEstado.reporteCartera = nuevoEstado.reporteCartera.filter(c => c.nit !== clienteNit);
-            nuevoEstado.clientes = nuevoEstado.clientes.filter(c => c.id !== clienteNit);
-          }
-        }
-      }
+    try {
+      const { error } = await supabase
+        .from('facturas_proveedores')
+        .delete()
+        .eq('id', documentoId);
 
-      return nuevoEstado;
-    });
-
-    alert('Documento eliminado exitosamente!');
+      if (error) throw error;
+      await cargarDatos();
+    } catch (err) {
+      alert('Error al eliminar: ' + err.message);
+    }
   };
 
   const convertirFechaParaInput = (fechaString) => {
@@ -352,8 +316,7 @@ const ContabilidadScreen = () => {
   };
 
   const aplicarFiltros = () => {
-    setCargando(true);
-    setTimeout(() => setCargando(false), 800);
+    cargarDatos();
   };
 
   const formatCurrency = (amount) => {
@@ -401,20 +364,37 @@ const ContabilidadScreen = () => {
         <p>Dashboard, reportes de cartera y análisis de pagos mensuales</p>
       </div>
 
-      {/* Botones de Acción Principales */}
-      <div className="acciones-principales">
-        <button 
-          className="btn btn-success" 
-          onClick={() => {
-            setEditandoRegistro(null);
-            setMostrarFormulario(true);
-          }}
+      {errorConexion && (
+        <div style={{background:'#fee2e2',color:'#b91c1c',padding:'12px 16px',borderRadius:'8px',marginBottom:'16px',fontWeight:'500'}}>
+          ⚠️ {errorConexion}
+        </div>
+      )}
+
+      {/* Toolbar: acciones + navegación */}
+      <div className="toolbar-row">
+        <button
+          className="btn btn-success"
+          onClick={() => { setEditandoRegistro(null); setMostrarFormulario(true); }}
         >
-          ➕ Agregar Registro
+          ➕ Nuevo Registro
         </button>
         <button className="btn btn-primary" onClick={aplicarFiltros}>
-          🔄 Actualizar Datos
+          🔄 Actualizar
         </button>
+        <div className="navegacion-vistas">
+          <button
+            className={`btn-vista ${vistaActiva === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setVistaActiva('dashboard')}
+          >
+            📈 Dashboard
+          </button>
+          <button
+            className={`btn-vista ${vistaActiva === 'cartera' ? 'active' : ''}`}
+            onClick={() => setVistaActiva('cartera')}
+          >
+            📋 Cartera
+          </button>
+        </div>
       </div>
 
       {/* Formulario para Nuevo Registro */}
@@ -573,25 +553,9 @@ const ContabilidadScreen = () => {
         </div>
       )}
 
-      {/* Navegación entre vistas */}
-      <div className="navegacion-vistas">
-        <button 
-          className={`btn-vista ${vistaActiva === 'dashboard' ? 'active' : ''}`}
-          onClick={() => setVistaActiva('dashboard')}
-        >
-          📈 Dashboard
-        </button>
-        <button 
-          className={`btn-vista ${vistaActiva === 'cartera' ? 'active' : ''}`}
-          onClick={() => setVistaActiva('cartera')}
-        >
-          📋 Estado de Cartera
-        </button>
-      </div>
-
       {vistaActiva === 'dashboard' ? (
         <div className="dashboard-container">
-          <h2>📊 Dashboard de Cartera</h2>
+          <h2>Resumen de cartera</h2>
           <div className="metricas-grid">
             <div className="metrica-card">
               <h3>Total Cartera</h3>
@@ -599,7 +563,7 @@ const ContabilidadScreen = () => {
             </div>
             <div className="metrica-card">
               <h3>Clientes Activos</h3>
-              <p className="metrica-valor">{datosContabilidad.reporteCartera.length}</p>
+              <p className="metrica-valor">{datosContabilidad.reporteCartera.length} prov.</p>
             </div>
             <div className="metrica-card">
               <h3>Documentos Totales</h3>
@@ -660,6 +624,12 @@ const ContabilidadScreen = () => {
 
           {/* Reportes de Cartera */}
           <div className="reportes-cartera">
+            {datosContabilidad.reporteCartera.length === 0 && (
+              <div className="cartera-vacia">
+                <span style={{fontSize:'2rem'}}>📭</span>
+                <p>No hay facturas registradas en cuentas por pagar.</p>
+              </div>
+            )}
             {datosContabilidad.reporteCartera.map((cliente) => (
               <div key={cliente.id} className="cliente-reporte">
                 <div className="cliente-header">

@@ -20,82 +20,17 @@ const GastosEmpresa = () => {
   // Modal de nuevo gasto
   const [mostrarModal, setMostrarModal] = useState(false);
   const [gastoEditando, setGastoEditando] = useState(null);
-  const [formGasto, setFormGasto] = useState({
+  const crearFormularioInicial = () => ({
     fecha: new Date().toISOString().split('T')[0],
     categoria: 'Servicios',
-    empleado: 'Edwin Marín',
+    empleado: 'Alan Diaz',
     descripcion: '',
     monto: '',
     metodo_pago: 'transferencia',
     referencia: '',
     notas: ''
   });
-
-  // Datos de ejemplo
-  const datosEjemplo = {
-    gastos: [
-      {
-        id: 1,
-        fecha: '2026-02-15',
-        categoria: 'Nómina',
-        empleado: 'Paola Huertas',
-        descripcion: 'Pago nómina febrero',
-        monto: 2750000,
-        metodo_pago: 'transferencia',
-        referencia: 'TRANS-001',
-        notas: 'Pago habitual',
-        created_at: '2026-02-01'
-      },
-      {
-        id: 2,
-        fecha: '2026-02-14',
-        categoria: 'Servicios',
-        empleado: 'Edwin Marín',
-        descripcion: 'Pago internet y teléfono',
-        monto: 185000,
-        metodo_pago: 'transferencia',
-        referencia: 'TRANS-002',
-        notas: '',
-        created_at: '2026-02-01'
-      },
-      {
-        id: 3,
-        fecha: '2026-02-12',
-        categoria: 'Transporte',
-        empleado: 'Jhon Fredy Marín',
-        descripcion: 'Gasolina y mantenimiento vehículo',
-        monto: 250000,
-        metodo_pago: 'efectivo',
-        referencia: 'EFE-001',
-        notas: 'Recibo guardado',
-        created_at: '2026-02-01'
-      },
-      {
-        id: 4,
-        fecha: '2026-02-10',
-        categoria: 'Suministros',
-        empleado: 'Carolina Bernal',
-        descripcion: 'Papel, bolígrafos y otros suministros de oficina',
-        monto: 125000,
-        metodo_pago: 'transferencia',
-        referencia: 'TRANS-003',
-        notas: '',
-        created_at: '2026-02-01'
-      },
-      {
-        id: 5,
-        fecha: '2026-02-08',
-        categoria: 'Viáticos',
-        empleado: 'Fabian Marín',
-        descripcion: 'Viáticos viaje a Medellín',
-        monto: 450000,
-        metodo_pago: 'efectivo',
-        referencia: 'VIA-001',
-        notas: 'Hospedaje y comidas',
-        created_at: '2026-02-01'
-      }
-    ]
-  };
+  const [formGasto, setFormGasto] = useState(() => crearFormularioInicial());
 
   // Categorías disponibles
   const categorias = [
@@ -111,7 +46,7 @@ const GastosEmpresa = () => {
     { value: 'Otros', label: '📝 Otros' }
   ];
 
-  const empleados = ['Edwin Marín', 'Jhon Fredy Marín', 'Paola Huertas', 'Carolina Bernal', 'Fabian Marín'];
+  const empleados = ['Alan Diaz', 'Jhon Diaz', 'Andrea Gutiérrez', 'Otro'];
   const metodosPago = [
     { value: 'transferencia', label: 'Transferencia' },
     { value: 'efectivo', label: 'Efectivo' },
@@ -160,8 +95,8 @@ const GastosEmpresa = () => {
         setErrorSetup('Falta crear la tabla gastos_empresa en Supabase. Ejecuta sql/GASTOS_EMPRESA_SETUP.sql en SQL Editor.');
         setGastos([]);
       } else {
-        // Fallback a datos de ejemplo si Supabase no está configurado
-        setGastos(datosEjemplo.gastos);
+        setErrorSetup('No fue posible cargar gastos desde la base de datos. Verifica la conexión e intenta de nuevo.');
+        setGastos([]);
       }
     } finally {
       setCargando(false);
@@ -274,16 +209,7 @@ const GastosEmpresa = () => {
       setFormGasto(gasto);
     } else {
       setGastoEditando(null);
-      setFormGasto({
-        fecha: new Date().toISOString().split('T')[0],
-        categoria: 'Servicios',
-        empleado: 'Edwin Marín',
-        descripcion: '',
-        monto: '',
-        metodo_pago: 'transferencia',
-        referencia: '',
-        notas: ''
-      });
+      setFormGasto(crearFormularioInicial());
     }
     setMostrarModal(true);
   };
@@ -291,6 +217,7 @@ const GastosEmpresa = () => {
   const cerrarModal = () => {
     setMostrarModal(false);
     setGastoEditando(null);
+    setFormGasto(crearFormularioInicial());
   };
 
   // Funciones de utilidad

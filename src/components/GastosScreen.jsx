@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './GastosScreen.css';
+import { supabase } from '../lib/supabase';
 
 const GastosScreen = () => {
   const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth());
@@ -9,6 +10,7 @@ const GastosScreen = () => {
   const [gastoEditando, setGastoEditando] = useState(null);
   const [datosGastos, setDatosGastos] = useState(null);
   const [cargando, setCargando] = useState(false);
+  const [errorConexion, setErrorConexion] = useState('');
 
   // Filtros avanzados
   const [personaFiltro, setPersonaFiltro] = useState('todos');
@@ -41,7 +43,7 @@ const GastosScreen = () => {
   const [nuevoGasto, setNuevoGasto] = useState({
     fecha: '',
     tipo: 'nequi',
-    persona: 'Edwin Marín',
+    persona: 'Alan Diaz',
     cantidad: '',
     referencia: '',
     categoria: 'Servicios',
@@ -54,200 +56,148 @@ const GastosScreen = () => {
     abono: ''
   });
 
-  // Datos de ejemplo basados en el documento
-  const datosEjemplo = {
-    gastosNequi: {
-      'Edwin Marín': [
-        {
-          id: 1,
-          fecha: '2025-06-05',
-          cantidad: 380000,
-          referencia: 'M12808105',
-          descripcion: 'Pago varios'
-        },
-        {
-          id: 2,
-          fecha: '2025-06-07',
-          cantidad: 1000000,
-          referencia: 'M12152352',
-          descripcion: 'Transferencia negocio'
-        },
-        // ... más gastos de Edwin según el documento
-      ],
-      'Jhon Fredy Marín': [
-        {
-          id: 101,
-          fecha: '2025-06-01',
-          cantidad: 200000,
-          referencia: 'S7660991',
-          descripcion: 'Pago inicial'
-        },
-        {
-          id: 102,
-          fecha: '2025-06-03',
-          cantidad: 270000,
-          referencia: 'M168089',
-          descripcion: 'Compra materiales'
-        },
-        // ... más gastos de Jhon según el documento
-      ]
-    },
-    nominas: [
-      {
-        id: 201,
-        persona: 'Paola Huertas',
-        cantidad: 2750000,
-        mes: 5, // Junio
-        anio: 2025,
-        tipo: 'nómina',
-        descripcion: 'Pago nómina mensual'
-      },
-      {
-        id: 202,
-        persona: 'Carolina Bernal',
-        cantidad: 1550000,
-        mes: 5,
-        anio: 2025,
-        tipo: 'nómina',
-        descripcion: 'Pago nómina mensual'
-      },
-      {
-        id: 203,
-        persona: 'Fabian Marín',
-        cantidad: 2500000,
-        mes: 5,
-        anio: 2025,
-        tipo: 'prima',
-        descripcion: 'Prima 2024'
-      }
-    ],
-    gastosEspecificos: [
-      {
-        id: 301,
-        categoria: 'Ofrenda',
-        cantidad: 1400000,
-        mes: 5,
-        anio: 2025
-      },
-      {
-        id: 302,
-        categoria: 'E.P.S',
-        cantidad: 400000,
-        mes: 5,
-        anio: 2025
-      },
-      {
-        id: 303,
-        categoria: 'Gasolina',
-        cantidad: 323000,
-        mes: 5,
-        anio: 2025
-      },
-      {
-        id: 304,
-        categoria: 'Parqueadero',
-        cantidad: 470000,
-        mes: 5,
-        anio: 2025
-      },
-      {
-        id: 305,
-        categoria: 'Comida',
-        cantidad: 357500,
-        mes: 5,
-        anio: 2025
-      },
-      {
-        id: 306,
-        categoria: 'Arriendo',
-        cantidad: 650000,
-        mes: 5,
-        anio: 2025
-      },
-      {
-        id: 307,
-        categoria: 'Viajes',
-        cantidad: 200000,
-        mes: 5,
-        anio: 2025
-      },
-      {
-        id: 308,
-        categoria: 'Pasajes',
-        cantidad: 50400,
-        mes: 5,
-        anio: 2025
-      },
-      {
-        id: 309,
-        categoria: 'Compras Oficina',
-        cantidad: 102500,
-        mes: 5,
-        anio: 2025
-      }
-    ],
-    creditos: [
-      {
-        id: 401,
-        distribuidora: 'Roma',
-        pago: 700000,
-        cartera: 4152638,
-        fechaPago: '2025-07-13',
-        tipo: 'crédito'
-      },
-      {
-        id: 402,
-        distribuidora: 'Axa',
-        pago: 1796000,
-        cartera: 3140000,
-        fechaPago: '2025-07-20',
-        tipo: 'crédito'
-      },
-      {
-        id: 403,
-        distribuidora: 'Coopicredito',
-        pago: 22731842,
-        cartera: 0,
-        fechaPago: '2025-07-05',
-        tipo: 'crédito'
-      }
-    ],
-    facturas: [
-      {
-        id: 1001,
-        refDoc: '500787688',
-        clase: 'RV',
-        fhBase: '2025-09-23',
-        importe: 35806685,
-        abono: 4380669,
-        aPagar: 31426017,
-        tipo: 'factura'
-      },
-      {
-        id: 1002,
-        refDoc: '4400077966',
-        clase: 'NC',
-        fhBase: '',
-        importe: -12861150,
-        abono: 0,
-        aPagar: -12861150,
-        tipo: 'factura'
-      }
-    ],
+  const crearDatosBase = () => ({
+    gastosNequi: {},
+    nominas: [],
+    gastosEspecificos: [],
+    creditos: [],
+    facturas: [],
     cajaMenor: {
-      moneda: 43000,
-      efectivo: 352000,
-      total: 395000
+      moneda: 0,
+      efectivo: 0,
+      total: 0
     }
+  });
+
+  const construirDatosCompletos = (base, gastosEmpresa = [], facturasProveedores = [], proveedores = []) => {
+    const nuevoEstado = JSON.parse(JSON.stringify(base));
+
+    gastosEmpresa.forEach((registro) => {
+      const monto = Number(registro.monto) || 0;
+      const fecha = registro.fecha || new Date().toISOString().split('T')[0];
+      const persona = registro.empleado || 'Otro';
+      const referencia = registro.referencia || '';
+      const descripcion = registro.descripcion || '';
+      const categoria = registro.categoria || 'Otros';
+      const metodo = (registro.metodo_pago || '').toLowerCase();
+      const fechaObj = new Date(fecha + 'T00:00:00');
+
+      if (categoria.toLowerCase().includes('nomina') || categoria.toLowerCase().includes('nómina')) {
+        nuevoEstado.nominas.push({
+          id: `ge-${registro.id}`,
+          persona,
+          cantidad: monto,
+          mes: fechaObj.getMonth(),
+          anio: fechaObj.getFullYear(),
+          fecha,
+          tipo: 'nómina',
+          descripcion,
+          origen: 'gastos_empresa'
+        });
+        return;
+      }
+
+      if (metodo === 'nequi') {
+        if (!nuevoEstado.gastosNequi[persona]) {
+          nuevoEstado.gastosNequi[persona] = [];
+        }
+        nuevoEstado.gastosNequi[persona].push({
+          id: `ge-${registro.id}`,
+          fecha,
+          cantidad: monto,
+          referencia,
+          descripcion,
+          categoria,
+          persona,
+          origen: 'gastos_empresa'
+        });
+        return;
+      }
+
+      nuevoEstado.gastosEspecificos.push({
+        id: `ge-${registro.id}`,
+        categoria,
+        cantidad: monto,
+        mes: fechaObj.getMonth(),
+        anio: fechaObj.getFullYear(),
+        fecha,
+        persona,
+        referencia,
+        descripcion,
+        origen: 'gastos_empresa'
+      });
+    });
+
+    // Integrar cuentas por pagar (facturas de proveedores pendientes)
+    const proveedoresPorId = (proveedores || []).reduce((acc, proveedor) => {
+      acc[proveedor.id] = proveedor.nombre || `Proveedor ${proveedor.id}`;
+      return acc;
+    }, {});
+
+    nuevoEstado.creditos = (facturasProveedores || [])
+      .map((factura) => {
+        const saldo = Number(factura.saldo) || 0;
+        const pagado = Number(factura.pagado) || 0;
+        const total = Number(factura.total) || 0;
+        const distribuidora = proveedoresPorId[factura.proveedor_id] || 'Proveedor no identificado';
+
+        return {
+          id: `fp-${factura.id}`,
+          distribuidora,
+          pago: saldo > 0 ? saldo : Math.max(0, total - pagado),
+          cartera: saldo,
+          fechaPago: factura.fecha_vencimiento || factura.fecha_emision || 'Sin fecha',
+          tipo: (factura.clase || 'credito').toLowerCase(),
+          numeroFactura: factura.numero_factura
+        };
+      })
+      .filter((credito) => credito.cartera > 0)
+      .sort((a, b) => new Date(a.fechaPago) - new Date(b.fechaPago));
+
+    return nuevoEstado;
   };
 
   useEffect(() => {
-    setCargando(true);
-    const timer = setTimeout(() => {
-      setDatosGastos(datosEjemplo);
-      setCargando(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    const cargarDatosCompletos = async () => {
+      setCargando(true);
+      setErrorConexion('');
+
+      try {
+        const [gastosResp, facturasResp, proveedoresResp] = await Promise.all([
+          supabase
+            .from('gastos_empresa')
+            .select('*')
+            .order('fecha', { ascending: false }),
+          supabase
+            .from('facturas_proveedores')
+            .select('id, proveedor_id, numero_factura, clase, fecha_emision, fecha_vencimiento, total, pagado, saldo')
+            .order('fecha_vencimiento', { ascending: true }),
+          supabase
+            .from('proveedores')
+            .select('id, nombre')
+        ]);
+
+        if (gastosResp.error) throw gastosResp.error;
+        if (facturasResp.error) throw facturasResp.error;
+        if (proveedoresResp.error) throw proveedoresResp.error;
+
+        const datosCompletos = construirDatosCompletos(
+          crearDatosBase(),
+          Array.isArray(gastosResp.data) ? gastosResp.data : [],
+          Array.isArray(facturasResp.data) ? facturasResp.data : [],
+          Array.isArray(proveedoresResp.data) ? proveedoresResp.data : []
+        );
+        setDatosGastos(datosCompletos);
+      } catch (error) {
+        console.error('Error cargando gastos_empresa en GastosScreen:', error);
+        setErrorConexion('No se pudo sincronizar con gastos/cuentas por pagar. Verifica la conexion y vuelve a intentar.');
+        setDatosGastos(crearDatosBase());
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarDatosCompletos();
   }, []);
 
   // Categorías de gastos
@@ -268,7 +218,17 @@ const GastosScreen = () => {
   ];
 
   // Personas
-  const personas = ['Edwin Marín', 'Jhon Fredy Marín', 'Paola Huertas', 'Carolina Bernal', 'Fabian Marín'];
+  const personas = ['Alan Diaz', 'Jhon Diaz', 'Andrea Gutiérrez', 'Otro'];
+
+  const totalNequi = datosGastos
+    ? Object.values(datosGastos.gastosNequi || {}).flat().reduce((sum, gasto) => sum + (Number(gasto.cantidad) || 0), 0)
+    : 0;
+  const totalNominas = datosGastos
+    ? (datosGastos.nominas || []).reduce((sum, nomina) => sum + (Number(nomina.cantidad) || 0), 0)
+    : 0;
+  const totalEspecificos = datosGastos
+    ? (datosGastos.gastosEspecificos || []).reduce((sum, gasto) => sum + (Number(gasto.cantidad) || 0), 0)
+    : 0;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -328,15 +288,10 @@ const GastosScreen = () => {
 
     let total = 0;
 
-    // Sumar gastos Nequi de Edwin
-    if (datosGastos.gastosNequi['Edwin Marín']) {
-      total += datosGastos.gastosNequi['Edwin Marín'].reduce((sum, gasto) => sum + gasto.cantidad, 0);
-    }
-
-    // Sumar gastos Nequi de Jhon
-    if (datosGastos.gastosNequi['Jhon Fredy Marín']) {
-      total += datosGastos.gastosNequi['Jhon Fredy Marín'].reduce((sum, gasto) => sum + gasto.cantidad, 0);
-    }
+    // Sumar gastos Nequi de todas las personas
+    total += Object.values(datosGastos.gastosNequi || {})
+      .flat()
+      .reduce((sum, gasto) => sum + (Number(gasto.cantidad) || 0), 0);
 
     // Sumar nóminas
     total += datosGastos.nominas.reduce((sum, nomina) => sum + nomina.cantidad, 0);
@@ -425,7 +380,7 @@ const GastosScreen = () => {
     setNuevoGasto({
       fecha: gasto.fecha || '',
       tipo: tipo,
-      persona: persona || gasto.persona || 'Edwin Marín',
+      persona: persona || gasto.persona || 'Alan Diaz',
       cantidad: gasto.cantidad?.toString() || '',
       referencia: gasto.referencia || '',
       categoria: gasto.categoria || 'Servicios',
@@ -483,7 +438,7 @@ const GastosScreen = () => {
     setNuevoGasto({
       fecha: '',
       tipo: 'nequi',
-      persona: 'Edwin Marín',
+      persona: 'Alan Diaz',
       cantidad: '',
       referencia: '',
       categoria: 'Servicios',
@@ -639,9 +594,9 @@ const GastosScreen = () => {
           <h3>Total Gastos {getNombreMes(mesSeleccionado)} {anioSeleccionado}</h3>
           <p className="monto-total">{formatCurrency(calcularTotalGastos())}</p>
           <div className="desglose">
-            <span>Nequi: {formatCurrency(6348000 + 22743250)}</span>
-            <span>Nóminas: {formatCurrency(2750000 + 1550000 + 2500000)}</span>
-            <span>Gastos Específicos: {formatCurrency(16050400)}</span>
+            <span>Nequi: {formatCurrency(totalNequi)}</span>
+            <span>Nóminas: {formatCurrency(totalNominas)}</span>
+            <span>Gastos Específicos: {formatCurrency(totalEspecificos)}</span>
           </div>
         </div>
 
@@ -654,6 +609,12 @@ const GastosScreen = () => {
           </div>
         </div>
       </div>
+
+      {errorConexion && (
+        <div className="tabla-vacia" style={{ marginTop: '12px' }}>
+          <p>{errorConexion}</p>
+        </div>
+      )}
 
       {/* Botones de Acción */}
       <div className="acciones-principales">
@@ -1014,125 +975,73 @@ const GastosScreen = () => {
           
           {seccionesAbiertas.nequi && (
             <>
-              <div className="subseccion">
-                <h3>Edwin Marín - Total: {formatCurrency(
-                  datosGastos.gastosNequi['Edwin Marín']?.reduce((sum, g) => sum + g.cantidad, 0) || 0
-                )}</h3>
-                {datosGastos.gastosNequi['Edwin Marín']?.length > 0 ? (
-                  <>
-                    <div className="tabla-container">
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Fecha</th>
-                            <th>Cantidad</th>
-                            <th>Referencia</th>
-                            <th>Descripción</th>
-                            <th>Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {datosGastos.gastosNequi['Edwin Marín']?.slice(0, itemsPorPagina).map(gasto => (
-                            <tr key={gasto.id}>
-                              <td>{new Date(gasto.fecha).toLocaleDateString('es-CO')}</td>
-                              <td className="negative">{formatCurrency(gasto.cantidad)}</td>
-                              <td className="referencia">{gasto.referencia || '-'}</td>
-                              <td>{gasto.descripcion || '-'}</td>
-                              <td>
-                                <div className="acciones-tabla">
-                                  <button 
-                                    className="btn-editar"
-                                    onClick={() => editarGasto(gasto, 'nequi', 'Edwin Marín')}
-                                    title="Editar"
-                                  >
-                                    ✏️
-                                  </button>
-                                  <button 
-                                    className="btn-eliminar"
-                                    onClick={() => eliminarGasto(gasto.id, 'nequi', 'Edwin Marín')}
-                                    title="Eliminar"
-                                  >
-                                    🗑️
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    {datosGastos.gastosNequi['Edwin Marín']?.length > itemsPorPagina && (
-                      <div className="tabla-info">
-                        <span>{datosGastos.gastosNequi['Edwin Marín']?.length} registro(s) total</span>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="tabla-vacia">
-                    <p>No hay gastos registrados para Edwin Marín</p>
-                  </div>
-                )}
-              </div>
+              {Object.keys(datosGastos.gastosNequi || {}).length === 0 && (
+                <div className="tabla-vacia">
+                  <p>No hay gastos Nequi registrados</p>
+                </div>
+              )}
 
-              <div className="subseccion">
-                <h3>Jhon Fredy Marín - Total: {formatCurrency(
-                  datosGastos.gastosNequi['Jhon Fredy Marín']?.reduce((sum, g) => sum + g.cantidad, 0) || 0
-                )}</h3>
-                {datosGastos.gastosNequi['Jhon Fredy Marín']?.length > 0 ? (
-                  <>
-                    <div className="tabla-container">
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Fecha</th>
-                            <th>Cantidad</th>
-                            <th>Referencia</th>
-                            <th>Descripción</th>
-                            <th>Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {datosGastos.gastosNequi['Jhon Fredy Marín']?.slice(0, itemsPorPagina).map(gasto => (
-                            <tr key={gasto.id}>
-                              <td>{new Date(gasto.fecha).toLocaleDateString('es-CO')}</td>
-                              <td className="negative">{formatCurrency(gasto.cantidad)}</td>
-                              <td className="referencia">{gasto.referencia || '-'}</td>
-                              <td>{gasto.descripcion || '-'}</td>
-                              <td>
-                                <div className="acciones-tabla">
-                                  <button 
-                                    className="btn-editar"
-                                    onClick={() => editarGasto(gasto, 'nequi', 'Jhon Fredy Marín')}
-                                    title="Editar"
-                                  >
-                                    ✏️
-                                  </button>
-                                  <button 
-                                    className="btn-eliminar"
-                                    onClick={() => eliminarGasto(gasto.id, 'nequi', 'Jhon Fredy Marín')}
-                                    title="Eliminar"
-                                  >
-                                    🗑️
-                                  </button>
-                                </div>
-                              </td>
+              {Object.entries(datosGastos.gastosNequi || {}).map(([persona, gastosPersona]) => (
+                <div className="subseccion" key={persona}>
+                  <h3>{persona} - Total: {formatCurrency(
+                    (gastosPersona || []).reduce((sum, g) => sum + (Number(g.cantidad) || 0), 0)
+                  )}</h3>
+                  {(gastosPersona || []).length > 0 ? (
+                    <>
+                      <div className="tabla-container">
+                        <table className="data-table">
+                          <thead>
+                            <tr>
+                              <th>Fecha</th>
+                              <th>Cantidad</th>
+                              <th>Referencia</th>
+                              <th>Descripción</th>
+                              <th>Acciones</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    {datosGastos.gastosNequi['Jhon Fredy Marín']?.length > itemsPorPagina && (
-                      <div className="tabla-info">
-                        <span>{datosGastos.gastosNequi['Jhon Fredy Marín']?.length} registro(s) total</span>
+                          </thead>
+                          <tbody>
+                            {(gastosPersona || []).slice(0, itemsPorPagina).map(gasto => (
+                              <tr key={gasto.id}>
+                                <td>{new Date(gasto.fecha).toLocaleDateString('es-CO')}</td>
+                                <td className="negative">{formatCurrency(gasto.cantidad)}</td>
+                                <td className="referencia">{gasto.referencia || '-'}</td>
+                                <td>{gasto.descripcion || '-'}</td>
+                                <td>
+                                  <div className="acciones-tabla">
+                                    <button
+                                      className="btn-editar"
+                                      onClick={() => editarGasto(gasto, 'nequi', persona)}
+                                      title="Editar"
+                                    >
+                                      ✏️
+                                    </button>
+                                    <button
+                                      className="btn-eliminar"
+                                      onClick={() => eliminarGasto(gasto.id, 'nequi', persona)}
+                                      title="Eliminar"
+                                    >
+                                      🗑️
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="tabla-vacia">
-                    <p>No hay gastos registrados para Jhon Fredy Marín</p>
-                  </div>
-                )}
-              </div>
+                      {(gastosPersona || []).length > itemsPorPagina && (
+                        <div className="tabla-info">
+                          <span>{(gastosPersona || []).length} registro(s) total</span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="tabla-vacia">
+                      <p>No hay gastos registrados para {persona}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
             </>
           )}
         </div>
@@ -1390,6 +1299,11 @@ const GastosScreen = () => {
           </div>
           {seccionesAbiertas.credito && (
             <div className="creditos-grid">
+              {datosGastos.creditos.length === 0 && (
+                <div className="tabla-vacia">
+                  <p>No hay facturas pendientes en cuentas por pagar.</p>
+                </div>
+              )}
               {datosGastos.creditos.map(credito => (
                 <div key={credito.id} className="credito-card">
                   <div className="credito-header">
