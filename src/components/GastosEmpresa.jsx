@@ -7,6 +7,8 @@ const GastosEmpresa = () => {
   const [vistaActual, setVistaActual] = useState('dashboard'); // dashboard, nuevo, historial, reportes
   const [gastos, setGastos] = useState([]);
   const [cargando, setCargando] = useState(false);
+  const [setupPendiente, setSetupPendiente] = useState(false);
+  const [errorSetup, setErrorSetup] = useState('');
   
   // Filtros
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
@@ -117,10 +119,19 @@ const GastosEmpresa = () => {
     { value: 'cheque', label: 'Cheque' }
   ];
 
+  const esErrorTablaGastos = (error) => {
+    return (
+      error?.code === 'PGRST205' ||
+      String(error?.message || '').includes("Could not find the table 'public.gastos_empresa'")
+    );
+  };
+
   // Cargar gastos desde Supabase
   const cargarGastos = async () => {
     try {
       setCargando(true);
+      setSetupPendiente(false);
+      setErrorSetup('');
       const { data, error } = await supabase
         .from('gastos_empresa')
         .select('*')
@@ -144,8 +155,14 @@ const GastosEmpresa = () => {
       setGastos(gastosFormateados);
     } catch (error) {
       console.error('Error al cargar gastos:', error);
-      // Fallback a datos de ejemplo si Supabase no está configurado
-      setGastos(datosEjemplo.gastos);
+      if (esErrorTablaGastos(error)) {
+        setSetupPendiente(true);
+        setErrorSetup('Falta crear la tabla gastos_empresa en Supabase. Ejecuta sql/GASTOS_EMPRESA_SETUP.sql en SQL Editor.');
+        setGastos([]);
+      } else {
+        // Fallback a datos de ejemplo si Supabase no está configurado
+        setGastos(datosEjemplo.gastos);
+      }
     } finally {
       setCargando(false);
     }
@@ -158,6 +175,11 @@ const GastosEmpresa = () => {
 
   // Guardar gasto
   const guardarGasto = async () => {
+    if (setupPendiente) {
+      alert('No se puede guardar hasta crear la tabla gastos_empresa en Supabase. Ejecuta sql/GASTOS_EMPRESA_SETUP.sql');
+      return;
+    }
+
     if (!formGasto.fecha || !formGasto.monto || !formGasto.descripcion) {
       alert('Por favor completa los campos requeridos: fecha, monto y descripción');
       return;
@@ -198,12 +220,23 @@ const GastosEmpresa = () => {
       cerrarModal();
     } catch (error) {
       console.error('Error al guardar gasto:', error);
-      alert('Error al guardar gasto: ' + error.message);
+      if (esErrorTablaGastos(error)) {
+        setSetupPendiente(true);
+        setErrorSetup('Falta crear la tabla gastos_empresa en Supabase. Ejecuta sql/GASTOS_EMPRESA_SETUP.sql en SQL Editor.');
+        alert('Configuración pendiente: crea la tabla gastos_empresa en Supabase para poder guardar.');
+      } else {
+        alert('Error al guardar gasto: ' + error.message);
+      }
     }
   };
 
   // Eliminar gasto
   const eliminarGasto = async (id) => {
+    if (setupPendiente) {
+      alert('No se puede eliminar porque la tabla gastos_empresa aún no existe en Supabase.');
+      return;
+    }
+
     if (!confirm('¿Estás seguro de que deseas eliminar este gasto?')) return;
 
     try {
@@ -217,9 +250,22 @@ const GastosEmpresa = () => {
       await cargarGastos();
     } catch (error) {
       console.error('Error al eliminar gasto:', error);
-      alert('Error al eliminar gasto: ' + error.message);
+      if (esErrorTablaGastos(error)) {
+        setSetupPendiente(true);
+        setErrorSetup('Falta crear la tabla gastos_empresa en Supabase. Ejecuta sql/GASTOS_EMPRESA_SETUP.sql en SQL Editor.');
+        alert('Configuración pendiente: crea la tabla gastos_empresa en Supabase para poder eliminar.');
+      } else {
+        alert('Error al eliminar gasto: ' + error.message);
+      }
     }
   };
+
+  const setupNotice = setupPendiente ? (
+    <div style={{ marginBottom: '16px', border: '1px solid #f59e0b', background: '#fffbeb', color: '#92400e', borderRadius: '8px', padding: '12px' }}>
+      <strong>Configuración pendiente:</strong> {errorSetup}
+      <div style={{ marginTop: '6px' }}>Después de ejecutar el script en Supabase, recarga la página.</div>
+    </div>
+  ) : null;
 
   // Abrir modal
   const abrirModal = (gasto = null) => {
@@ -301,6 +347,8 @@ const GastosEmpresa = () => {
             ➕ Nuevo Gasto
           </button>
         </div>
+
+        {setupNotice}
 
         {/* Navegación de vistas */}
         <div className="ge-nav">
@@ -417,6 +465,8 @@ const GastosEmpresa = () => {
             ← Volver
           </button>
         </div>
+
+        {setupNotice}
 
         <div className="ge-form-container">
           <form className="ge-form">
@@ -536,6 +586,8 @@ const GastosEmpresa = () => {
             ➕ Nuevo Gasto
           </button>
         </div>
+
+        {setupNotice}
 
         {/* Filtros */}
         <div className="ge-filtros">
@@ -669,6 +721,8 @@ const GastosEmpresa = () => {
         <div className="ge-header">
           <h1>📈 Reportes</h1>
         </div>
+
+        {setupNotice}
 
         <div className="reportes-grid">
           <div className="reporte-box">

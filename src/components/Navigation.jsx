@@ -99,6 +99,7 @@ const Navigation = () => {
           submenu: [
             { path: '/gastos', label: 'Gestión de Gastos', icon: '💸' },
             { path: '/gastos-empresa', label: 'Gastos de Empresa', icon: '📊' },
+            { path: '/contabilidad-gastos', label: 'Gastos Fácil', icon: '🧾' },
             { path: '/cuentas-por-pagar', label: 'Cuentas por Pagar', icon: '📄' },
             { path: '/dashboard-contabilidad', label: 'Dashboard Contabilidad', icon: '📊' }
           ]
@@ -157,6 +158,7 @@ const Navigation = () => {
           submenu: [
             { path: '/gastos', label: 'Gestión de Gastos', icon: '💸' },
             { path: '/gastos-empresa', label: 'Gastos de Empresa', icon: '📊' },
+            { path: '/contabilidad-gastos', label: 'Gastos Fácil', icon: '🧾' },
             { path: '/cuentas-por-pagar', label: 'Cuentas por Pagar', icon: '📄' },
             { path: '/dashboard-contabilidad', label: 'Dashboard Contabilidad', icon: '📊' }
           ]
@@ -185,6 +187,7 @@ const Navigation = () => {
         { path: '/reportes-cobros', label: 'Reportes de Cobros', icon: '📈', tipo: 'simple' },
         { path: '/gastos', label: 'Gestión de Gastos', icon: '💰', tipo: 'simple' },
         { path: '/gastos-empresa', label: 'Gastos de la Empresa', icon: '💸', tipo: 'simple' },
+        { path: '/contabilidad-gastos', label: 'Gastos Fácil', icon: '🧾', tipo: 'simple' },
         { path: '/cuentas-por-pagar', label: 'Gastos Empresa (Proveedores)', icon: '📊', tipo: 'simple' },
         { path: '/rutas-cobro', label: 'Rutas de Cobro', icon: '🚗', tipo: 'simple' },
         { path: '/gestion-pedidos', label: 'Gestión Pedidos', icon: '🛒', tipo: 'simple' },

@@ -18,6 +18,7 @@ import MallMap from './components/MallMap';
 import RutasCobro from './components/RutasCobro';
 import GastosScreen from './components/GastosScreen';
 import GastosEmpresa from './components/GastosEmpresa';
+import GastosContabilidadFacil from './components/GastosContabilidadFacil';
 import CuentasPorPagar from './components/CuentasPorPagar';
 import ContabilidadScreen from './components/ContabilidadScreen';
 import HistorialMovimientos from './components/HistorialMovimientos';
@@ -345,6 +346,16 @@ function App() {
                 <>
                   <PageMeta title="Gastos de la Empresa - e-business store(EBS)" description="Control de gastos operacionales" />
                   <GastosEmpresa />
+                </>
+              </ProtectedRoute>
+            } />
+
+            {/* Ruta simple para registrar gastos contables */}
+            <Route path="/contabilidad-gastos" element={
+              <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad']}>
+                <>
+                  <PageMeta title="Gastos Facil - e-business store(EBS)" description="Registro rapido de gastos para contabilidad" />
+                  <GastosContabilidadFacil />
                 </>
               </ProtectedRoute>
             } />

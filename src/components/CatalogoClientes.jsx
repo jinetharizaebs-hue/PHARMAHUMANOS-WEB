@@ -16,7 +16,7 @@ const CatalogoClientes = () => {
     notas: '',
     vendedor: ''
   });
-  const vendedores = ['John Diaz', 'Alan Díaz'];
+  const vendedores = ['John Diaz', 'Alan Diaz'];
   const normalizarVendedor = (nombre = '') =>
     nombre
       .normalize('NFD')
