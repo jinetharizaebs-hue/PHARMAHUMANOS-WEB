@@ -502,6 +502,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
   const [nuevoProducto, setNuevoProducto] = useState({
     codigo: '',
     nombre: '',
+    costo_compra: '',
     precio: '',
     categoria: '',
     stock: '',
@@ -577,10 +578,18 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
   };
 
   const validarProducto = () => {
-    if (!nuevoProducto.nombre || !nuevoProducto.precio) {
-      alert('⚠️ Nombre y precio son campos obligatorios');
+    if (!nuevoProducto.nombre || nuevoProducto.costo_compra === '' || nuevoProducto.precio === '') {
+      alert('⚠️ Nombre, costo de compra y precio de venta son campos obligatorios');
       return false;
     }
+
+    const costo = parseFloat(nuevoProducto.costo_compra);
+    const precio = parseFloat(nuevoProducto.precio);
+    if (Number.isNaN(costo) || costo < 0 || Number.isNaN(precio) || precio <= 0) {
+      alert('⚠️ Verifica que costo y precio sean valores numéricos válidos');
+      return false;
+    }
+
     return true;
   };
 
@@ -613,6 +622,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
       const productoData = {
         codigo: nuevoProducto.codigo || null,
         nombre: nuevoProducto.nombre,
+        costo_compra: parseFloat(nuevoProducto.costo_compra) || 0,
         precio: parseFloat(nuevoProducto.precio),
         categoria: nuevoProducto.categoria || null,
         stock: parseInt(nuevoProducto.stock) || 0,
@@ -668,6 +678,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
         };
 
         compareCampo('nombre', 'Nombre');
+        compareCampo('costo_compra', 'Costo de compra');
         compareCampo('precio', 'Precio');
         compareCampo('categoria', 'Categoría');
         compareCampo('descripcion', 'Descripción');
@@ -705,6 +716,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
           camposModificados: {
             nombre: nuevo.nombre,
             stock: nuevo.stock || 0,
+            costo_compra: nuevo.costo_compra || 0,
             precio: nuevo.precio,
             categoria: nuevo.categoria
           },
@@ -716,6 +728,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
       setNuevoProducto({
         codigo: '',
         nombre: '',
+        costo_compra: '',
         precio: '',
         categoria: '',
         stock: '',
@@ -728,6 +741,10 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
       setMostrarFormulario(false);
     } catch (error) {
       console.error('Error guardando producto:', error);
+      if ((error?.message || '').includes('costo_compra')) {
+        alert('Falta la columna costo_compra en la base de datos. Ejecuta el script SQL de migracion para habilitar margen por producto.');
+        return;
+      }
       alert('Error al guardar el producto');
     }
   };
@@ -777,6 +794,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
     setNuevoProducto({
       codigo: producto.codigo || '',
       nombre: producto.nombre || '',
+      costo_compra: producto.costo_compra?.toString() || '0',
       precio: producto.precio.toString() || '',
       categoria: producto.categoria || '',
       stock: producto.stock?.toString() || '',
@@ -1023,7 +1041,21 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
                 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Precio *:</label>
+                    <label>Costo Compra *:</label>
+                    <input
+                      type="number"
+                      name="costo_compra"
+                      value={nuevoProducto.costo_compra}
+                      onChange={handleInputChange}
+                      placeholder="Costo"
+                      min="0"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Precio Venta *:</label>
                     <input
                       type="number"
                       name="precio"

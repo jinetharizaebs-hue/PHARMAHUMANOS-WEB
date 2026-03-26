@@ -601,3 +601,37 @@
   color: #e74c3c;
   border: 1px solid #f5c6cb;
 }
+
+.fuente-costo {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  min-width: 84px;
+}
+
+.fuente-real {
+  background-color: #e8f5e9;
+  color: #1f7a3d;
+  border: 1px solid #b7dfbf;
+}
+
+.fuente-estimado {
+  background-color: #fff4e5;
+  color: #b26a00;
+  border: 1px solid #ffd49a;
+}
+
+.fuente-mixto {
+  background-color: #e8f1ff;
+  color: #2457a6;
+  border: 1px solid #bfd3ff;
+}
+
+.fuente-sin-datos {
+  background-color: #f2f4f7;
+  color: #667085;
+  border: 1px solid #d0d5dd;
+}

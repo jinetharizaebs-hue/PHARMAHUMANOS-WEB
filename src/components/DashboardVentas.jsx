@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, AreaChart, Area } from 'recharts';
+import { agruparUtilidadPorPeriodo, calcularRentabilidadFactura as calcularRentabilidadFacturaBase } from '../lib/rentabilidadUtils';
 import './DashboardVentas.css';
 
 const DashboardVentas = () => {
@@ -35,8 +36,16 @@ const DashboardVentas = () => {
   const [estadoPagoSeleccionado, setEstadoPagoSeleccionado] = useState('todas');
   const [vendedoresLista, setVendedoresLista] = useState([]);
   const [reporteVentas, setReporteVentas] = useState([]);
-  const [resumenReporte, setResumenReporte] = useState({ total: 0, facturas: 0, promedio: 0 });
+  const [resumenReporte, setResumenReporte] = useState({
+    total: 0,
+    facturas: 0,
+    promedio: 0,
+    costoTotal: 0,
+    utilidadTotal: 0,
+    margenPromedio: 0
+  });
   const [reporteLoading, setReporteLoading] = useState(false);
+  const [periodicidadUtilidad, setPeriodicidadUtilidad] = useState('diaria');
   // Estados para Productos
   const [productosMasVendidos, setProductosMasVendidos] = useState([]);
   const [productosLoading, setProductosLoading] = useState(false);
@@ -138,12 +147,16 @@ const DashboardVentas = () => {
     }
   };
 
+  const calcularRentabilidadFactura = (productosFactura = []) => {
+    return calcularRentabilidadFacturaBase(productosFactura);
+  };
+
   const generarReporteVentas = async () => {
     try {
       setReporteLoading(true);
       const query = supabase
         .from('facturas')
-        .select('id, fecha, total, cliente, vendedor')
+        .select('id, fecha, total, cliente, vendedor, productos')
         .gte('fecha', fechaInicio)
         .lte('fecha', fechaFin)
         .order('fecha');
@@ -167,6 +180,8 @@ const DashboardVentas = () => {
         const total = parseFloat(f.total) || 0;
         const saldo = total - totalAbonado;
         const estado = saldo <= 0 ? 'Pagada' : (totalAbonado > 0 ? 'Parcial' : 'Pendiente');
+        const { costoTotal, utilidadTotal, usaCostoEstimado, fuenteCosto } = calcularRentabilidadFactura(f.productos);
+        const margen = total > 0 ? (utilidadTotal / total) * 100 : 0;
         
         return {
           id: f.id,
@@ -174,6 +189,11 @@ const DashboardVentas = () => {
           cliente: f.cliente || '—',
           vendedor: f.vendedor || '—',
           total: total,
+          costoTotal,
+          utilidadTotal,
+          usaCostoEstimado,
+          fuenteCosto,
+          margen,
           totalAbonado: totalAbonado,
           saldo: saldo,
           estado: estado
@@ -191,13 +211,16 @@ const DashboardVentas = () => {
       
       setReporteVentas(ventasFiltradas);
       const total = ventasFiltradas.reduce((s, v) => s + v.total, 0);
+      const costoTotal = ventasFiltradas.reduce((s, v) => s + (v.costoTotal || 0), 0);
+      const utilidadTotal = ventasFiltradas.reduce((s, v) => s + (v.utilidadTotal || 0), 0);
       const facturas = ventasFiltradas.length;
       const promedio = facturas ? total / facturas : 0;
-      setResumenReporte({ total, facturas, promedio });
+      const margenPromedio = total > 0 ? (utilidadTotal / total) * 100 : 0;
+      setResumenReporte({ total, facturas, promedio, costoTotal, utilidadTotal, margenPromedio });
     } catch (e) {
       console.error('Error generando reporte:', e);
       setReporteVentas([]);
-      setResumenReporte({ total: 0, facturas: 0, promedio: 0 });
+      setResumenReporte({ total: 0, facturas: 0, promedio: 0, costoTotal: 0, utilidadTotal: 0, margenPromedio: 0 });
     } finally {
       setReporteLoading(false);
     }
@@ -310,8 +333,21 @@ const DashboardVentas = () => {
   };
 
   const exportarCSV = () => {
-    const encabezados = ['ID', 'Fecha', 'Cliente', 'Vendedor', 'Total', 'Abonado', 'Saldo', 'Estado'];
-    const filas = reporteVentas.map(r => [r.id, r.fecha, r.cliente, r.vendedor, r.total, r.totalAbonado || 0, r.saldo || 0, r.estado || 'Pendiente']);
+    const encabezados = ['ID', 'Fecha', 'Cliente', 'Vendedor', 'Total', 'Costo', 'Utilidad', 'Margen_%', 'Base_Costo', 'Abonado', 'Saldo', 'Estado'];
+    const filas = reporteVentas.map(r => [
+      r.id,
+      r.fecha,
+      r.cliente,
+      r.vendedor,
+      r.total,
+      r.costoTotal || 0,
+      r.utilidadTotal || 0,
+      (r.margen || 0).toFixed(2),
+      r.fuenteCosto || 'Sin datos',
+      r.totalAbonado || 0,
+      r.saldo || 0,
+      r.estado || 'Pendiente'
+    ]);
     const csv = [encabezados, ...filas]
       .map(row => row.map(val => `"${String(val).replace(/"/g, '"')}"`).join(','))
       .join('\n');
@@ -1066,6 +1102,74 @@ const DashboardVentas = () => {
     return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
   };
 
+  const normalizarFechaISO = (fecha) => {
+    if (!fecha) return '';
+    if (typeof fecha === 'string') return fecha.slice(0, 10);
+    const d = new Date(fecha);
+    return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+  };
+
+  const formatearPeriodo = (periodoKey) => {
+    if (!periodoKey) return 'Sin fecha';
+
+    if (periodicidadUtilidad === 'diaria') {
+      const d = new Date(`${periodoKey}T00:00:00`);
+      return Number.isNaN(d.getTime()) ? periodoKey : d.toLocaleDateString('es-CO');
+    }
+
+    const [anio, mes] = periodoKey.split('-');
+    const d = new Date(Number(anio), Number(mes) - 1, 1);
+    return Number.isNaN(d.getTime())
+      ? periodoKey
+      : d.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+  };
+
+  const reporteUtilidadPorPeriodo = useMemo(() => {
+    const ventasNormalizadas = (reporteVentas || []).map((venta) => ({
+      ...venta,
+      fecha: normalizarFechaISO(venta.fecha)
+    }));
+
+    return agruparUtilidadPorPeriodo(
+      ventasNormalizadas,
+      periodicidadUtilidad === 'diaria' ? 'diaria' : 'mensual'
+    )
+      .map((item) => ({
+        ...item,
+        periodoLabel: formatearPeriodo(item.periodoKey)
+      }))
+      .sort((a, b) => b.periodoKey.localeCompare(a.periodoKey));
+  }, [reporteVentas, periodicidadUtilidad]);
+
+  const resumenUtilidadActual = useMemo(() => {
+    const hoyKey = new Date().toISOString().slice(0, 10);
+    const mesActualKey = hoyKey.slice(0, 7);
+
+    const utilidadHoy = reporteUtilidadPorPeriodo
+      .filter((item) => item.periodoKey === hoyKey)
+      .reduce((sum, item) => sum + item.utilidadTotal, 0);
+
+    const utilidadMesActual = reporteUtilidadPorPeriodo
+      .filter((item) => item.periodoKey.slice(0, 7) === mesActualKey)
+      .reduce((sum, item) => sum + item.utilidadTotal, 0);
+
+    return { utilidadHoy, utilidadMesActual };
+  }, [reporteUtilidadPorPeriodo]);
+
+  const resumenFuenteCosto = useMemo(() => {
+    return (reporteVentas || []).reduce((acc, venta) => {
+      const fuente = venta?.fuenteCosto || 'Sin datos';
+      acc[fuente] = (acc[fuente] || 0) + 1;
+      return acc;
+    }, {});
+  }, [reporteVentas]);
+
+  const renderFuenteCostoBadge = (fuenteCosto) => {
+    const fuente = fuenteCosto || 'Sin datos';
+    const clase = `fuente-costo fuente-${fuente.toLowerCase().replace(/\s+/g, '-')}`;
+    return <span className={clase}>{fuente}</span>;
+  };
+
   // Colores para los gráficos
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
   const COLORS_COBROS = ['#4CAF50', '#2196F3', '#FF9800', '#E91E63', '#9C27B0', '#607D8B'];
@@ -1544,6 +1648,20 @@ const DashboardVentas = () => {
                 <strong>{formatCurrency(resumenReporte.total)}</strong>
               </div>
               <div className="resumen-item">
+                <span>Costo Total</span>
+                <strong>{formatCurrency(resumenReporte.costoTotal)}</strong>
+              </div>
+              <div className="resumen-item">
+                <span>Utilidad Total</span>
+                <strong style={{ color: resumenReporte.utilidadTotal >= 0 ? '#27ae60' : '#e74c3c' }}>
+                  {formatCurrency(resumenReporte.utilidadTotal)}
+                </strong>
+              </div>
+              <div className="resumen-item">
+                <span>Margen Promedio</span>
+                <strong>{formatPercentage(resumenReporte.margenPromedio)}</strong>
+              </div>
+              <div className="resumen-item">
                 <span>Facturas</span>
                 <strong>{resumenReporte.facturas}</strong>
               </div>
@@ -1551,7 +1669,19 @@ const DashboardVentas = () => {
                 <span>Ticket Promedio</span>
                 <strong>{formatCurrency(resumenReporte.promedio)}</strong>
               </div>
+              <div className="resumen-item">
+                <span>Facturas con costo real</span>
+                <strong>{resumenFuenteCosto.Real || 0}</strong>
+              </div>
+              <div className="resumen-item">
+                <span>Facturas estimadas</span>
+                <strong>{resumenFuenteCosto.Estimado || 0}</strong>
+              </div>
             </div>
+
+            <p style={{ marginBottom: '15px', color: '#5f6c7b', fontSize: '0.95rem' }}>
+              Base de costo: {renderFuenteCostoBadge('Real')} usa costo guardado en la factura. {renderFuenteCostoBadge('Estimado')} usa fallback del 20%. {renderFuenteCostoBadge('Mixto')} combina ambos casos.
+            </p>
 
             <div className="tabla-reporte-wrapper">
               {reporteLoading ? (
@@ -1567,6 +1697,10 @@ const DashboardVentas = () => {
                       <th>Cliente</th>
                       <th>Vendedor</th>
                       <th>Total</th>
+                      <th>Costo</th>
+                      <th>Utilidad</th>
+                      <th>Margen</th>
+                      <th>Base Costo</th>
                       <th>Abonado</th>
                       <th>Saldo</th>
                       <th>Estado</th>
@@ -1580,6 +1714,14 @@ const DashboardVentas = () => {
                         <td>{r.cliente}</td>
                         <td>{r.vendedor}</td>
                         <td className="col-total">{formatCurrency(r.total)}</td>
+                        <td className="col-total">{formatCurrency(r.costoTotal || 0)}</td>
+                        <td className="col-total" style={{ color: (r.utilidadTotal || 0) >= 0 ? '#27ae60' : '#e74c3c' }}>
+                          {formatCurrency(r.utilidadTotal || 0)}
+                        </td>
+                        <td className="col-total" style={{ color: (r.margen || 0) >= 0 ? '#27ae60' : '#e74c3c' }}>
+                          {formatPercentage(r.margen || 0)}
+                        </td>
+                        <td>{renderFuenteCostoBadge(r.fuenteCosto)}</td>
                         <td className="col-total">{formatCurrency(r.totalAbonado || 0)}</td>
                         <td className="col-total" style={{ color: r.saldo > 0 ? '#e74c3c' : '#27ae60' }}>
                           {formatCurrency(r.saldo || 0)}
@@ -1594,6 +1736,69 @@ const DashboardVentas = () => {
                   </tbody>
                 </table>
               )}
+            </div>
+
+            <div className="dashboard-card full-width" style={{ marginTop: '20px' }}>
+              <h3>💹 Utilidad {periodicidadUtilidad === 'diaria' ? 'Diaria' : 'Mensual'}</h3>
+
+              <div className="resumen-reporte" style={{ marginBottom: '15px' }}>
+                <div className="resumen-item">
+                  <span>Utilidad Hoy</span>
+                  <strong style={{ color: resumenUtilidadActual.utilidadHoy >= 0 ? '#27ae60' : '#e74c3c' }}>
+                    {formatCurrency(resumenUtilidadActual.utilidadHoy)}
+                  </strong>
+                </div>
+                <div className="resumen-item">
+                  <span>Utilidad Mes Actual</span>
+                  <strong style={{ color: resumenUtilidadActual.utilidadMesActual >= 0 ? '#27ae60' : '#e74c3c' }}>
+                    {formatCurrency(resumenUtilidadActual.utilidadMesActual)}
+                  </strong>
+                </div>
+                <div className="filtro">
+                  <label>Ver por</label>
+                  <select value={periodicidadUtilidad} onChange={e => setPeriodicidadUtilidad(e.target.value)}>
+                    <option value="diaria">Día</option>
+                    <option value="mensual">Mes</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="tabla-reporte-wrapper">
+                {reporteUtilidadPorPeriodo.length === 0 ? (
+                  <p>No hay datos de utilidad para los filtros actuales.</p>
+                ) : (
+                  <table className="tabla-reporte">
+                    <thead>
+                      <tr>
+                        <th>{periodicidadUtilidad === 'diaria' ? 'Día' : 'Mes'}</th>
+                        <th>Facturas</th>
+                        <th>Base Costo</th>
+                        <th>Ventas</th>
+                        <th>Costo</th>
+                        <th>Utilidad</th>
+                        <th>Margen</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reporteUtilidadPorPeriodo.map((item) => (
+                        <tr key={item.periodoKey}>
+                          <td><strong>{item.periodoLabel}</strong></td>
+                          <td className="col-cantidad">{item.facturas}</td>
+                          <td>{renderFuenteCostoBadge(item.fuenteCosto)}</td>
+                          <td className="col-total">{formatCurrency(item.ventaTotal)}</td>
+                          <td className="col-total">{formatCurrency(item.costoTotal)}</td>
+                          <td className="col-total" style={{ color: item.utilidadTotal >= 0 ? '#27ae60' : '#e74c3c' }}>
+                            {formatCurrency(item.utilidadTotal)}
+                          </td>
+                          <td className="col-total" style={{ color: item.margen >= 0 ? '#27ae60' : '#e74c3c' }}>
+                            {formatPercentage(item.margen)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
             </div>
           </div>
         </>

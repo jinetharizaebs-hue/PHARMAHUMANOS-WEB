@@ -26,7 +26,9 @@ const FacturaPreview = ({ factura, onVolver, onGuardar, cargando }) => {
           <tr>
             <th>Cantidad</th>
             <th>Producto</th>
+            <th>Costo Unit.</th>
             <th>Precio Unit.</th>
+            <th>Utilidad</th>
             <th>Total</th>
           </tr>
         </thead>
@@ -35,7 +37,9 @@ const FacturaPreview = ({ factura, onVolver, onGuardar, cargando }) => {
             <tr key={p.id}>
               <td>{p.cantidad || 0}</td>
               <td>{p.nombre || "Sin nombre"}</td>
+              <td>${(p.costo_compra || 0).toFixed(2)}</td>
               <td>${(p.precio || 0).toFixed(2)}</td>
+              <td>${((p.utilidad_total ?? (((p.precio || 0) - (p.costo_compra || 0)) * (p.cantidad || 0))) || 0).toFixed(2)}</td>
               <td>${((p.cantidad || 0) * (p.precio || 0)).toFixed(2)}</td>
             </tr>
           ))}
@@ -44,6 +48,14 @@ const FacturaPreview = ({ factura, onVolver, onGuardar, cargando }) => {
 
       <div className="total">
         <h3>TOTAL: ${factura.total?.toFixed(2) || "0.00"}</h3>
+        <h3>
+          UTILIDAD: ${
+            (factura.productos || []).reduce((sum, p) => {
+              const utilidad = p.utilidad_total ?? (((p.precio || 0) - (p.costo_compra || 0)) * (p.cantidad || 0));
+              return sum + (utilidad || 0);
+            }, 0).toFixed(2)
+          }
+        </h3>
       </div>
 
       <div className="botones">

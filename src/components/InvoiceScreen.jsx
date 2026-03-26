@@ -122,14 +122,40 @@ const InvoiceScreen = () => {
         ...p,
         producto_id: coincidencia.id,
         codigo: p.codigo || coincidencia.codigo || '',
-        precio: p.precio ?? coincidencia.precio ?? 0
+        precio: p.precio ?? coincidencia.precio ?? coincidencia.venta ?? 0,
+        precio_venta: p.precio_venta ?? p.precio ?? coincidencia.precio ?? coincidencia.venta ?? 0,
+        costo_compra: p.costo_compra ?? coincidencia.costo_compra ?? coincidencia.costo_de_compra ?? 0,
+        costo_de_compra: p.costo_de_compra ?? coincidencia.costo_de_compra ?? coincidencia.costo_compra ?? 0
       };
     });
 
     if (huboCambios) {
-      setProductos(productosActualizados);
+      setProductos(productosActualizados.map((p) => calcularMetricasRentabilidad(p)));
     }
   }, [productosCatalogo, productos]);
+
+  const toNumber = (valor) => {
+    const parsed = parseFloat(valor);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const calcularMetricasRentabilidad = (producto, cantidadForzada = null) => {
+    const cantidad = cantidadForzada ?? (parseInt(producto.cantidad, 10) || 0);
+    const precioVenta = toNumber(producto.precio_venta ?? producto.precio ?? producto.venta);
+    const costoCompra = toNumber(producto.costo_compra ?? producto.costo_de_compra);
+    const utilidadUnitaria = precioVenta - costoCompra;
+
+    return {
+      ...producto,
+      cantidad,
+      precio: precioVenta,
+      precio_venta: precioVenta,
+      costo_compra: costoCompra,
+      costo_de_compra: costoCompra,
+      utilidad_unitaria: utilidadUnitaria,
+      utilidad_total: utilidadUnitaria * cantidad
+    };
+  };
 
   // Función para verificar stock disponible
   const verificarStockDisponible = (productoId, cantidadRequerida) => {
@@ -184,10 +210,13 @@ const InvoiceScreen = () => {
       nombre: nombreProducto,
       cantidad: cantidad,
       precio: precio,
+      precio_venta: precio,
+      costo_compra: toNumber(productoCatalogo?.costo_compra ?? productoCatalogo?.costo_de_compra),
+      costo_de_compra: toNumber(productoCatalogo?.costo_de_compra ?? productoCatalogo?.costo_compra),
       producto_id: productoCatalogo?.id || null
     };
 
-    setProductos([...productos, nuevoProducto]);
+    setProductos([...productos, calcularMetricasRentabilidad(nuevoProducto)]);
     setNombreProducto('');
     setCantidadProducto('');
     setPrecioProducto('');
@@ -222,7 +251,7 @@ const InvoiceScreen = () => {
         
         return prevProductos.map(p => 
           p.producto_id === producto.id 
-            ? { ...p, cantidad: nuevaCantidad } 
+            ? calcularMetricasRentabilidad({ ...p, cantidad: nuevaCantidad }) 
             : p
         );
       }
@@ -240,11 +269,14 @@ const InvoiceScreen = () => {
           id: producto.id || Date.now(),
           nombre: producto.nombre,
           cantidad: 1,
-          precio: producto.precio,
+          precio: producto.precio ?? producto.venta,
+          precio_venta: producto.precio ?? producto.venta,
+          costo_compra: toNumber(producto.costo_compra ?? producto.costo_de_compra),
+          costo_de_compra: toNumber(producto.costo_de_compra ?? producto.costo_compra),
           codigo: producto.codigo || '',
           producto_id: producto.id
         }
-      ];
+      ].map((p) => calcularMetricasRentabilidad(p));
     });
     
     setErroresStock({});
@@ -372,7 +404,7 @@ const InvoiceScreen = () => {
     }
 
     const productosActualizados = productos.map(p => 
-      p.id === productoId ? { ...p, cantidad: nuevaCantidad } : p
+      p.id === productoId ? calcularMetricasRentabilidad({ ...p, cantidad: nuevaCantidad }) : p
     );
     
     setProductos(productosActualizados);
@@ -403,7 +435,7 @@ const InvoiceScreen = () => {
     }
 
     const productosActualizados = productos.map(p => 
-      p.id === productoId ? { ...p, cantidad: nuevaCantidad } : p
+      p.id === productoId ? calcularMetricasRentabilidad({ ...p, cantidad: nuevaCantidad }) : p
     );
     
     setProductos(productosActualizados);
@@ -441,7 +473,7 @@ const InvoiceScreen = () => {
     }
 
     const productosActualizados = productos.map(p => 
-      p.id === id ? { ...p, cantidad: cantidad } : p
+      p.id === id ? calcularMetricasRentabilidad({ ...p, cantidad }) : p
     );
     
     setProductos(productosActualizados);
@@ -510,6 +542,9 @@ const InvoiceScreen = () => {
     try {
       setCargando(true);
       
+      const productosConRentabilidad = productos.map((p) => calcularMetricasRentabilidad(p));
+      const utilidadTotalFactura = productosConRentabilidad.reduce((sum, p) => sum + (p.utilidad_total || 0), 0);
+
       const facturaData = {
         cliente,
         fecha,
@@ -517,8 +552,8 @@ const InvoiceScreen = () => {
         direccion: direccion || null,
         telefono: telefono || null,
         correo: correo || null,
-        productos,
-        total: productos.reduce((sum, p) => sum + (p.cantidad * p.precio), 0),
+        productos: productosConRentabilidad,
+        total: productosConRentabilidad.reduce((sum, p) => sum + (p.cantidad * p.precio), 0),
       };
 
       const { data, error } = await supabase
@@ -546,7 +581,7 @@ const InvoiceScreen = () => {
 
       // Mostrar diálogo de confirmación con opción de imprimir
       const usuarioQuiereImprimir = window.confirm(
-        `✅ Factura guardada exitosamente!\n\nN° Factura: ${numeroFactura}\nCliente: ${cliente}\nTotal: $${facturaData.total.toFixed(2)}\n\n¿Deseas imprimir la factura ahora?`
+        `✅ Factura guardada exitosamente!\n\nN° Factura: ${numeroFactura}\nCliente: ${cliente}\nTotal Venta: $${facturaData.total.toFixed(2)}\nUtilidad estimada: $${utilidadTotalFactura.toFixed(2)}\n\n¿Deseas imprimir la factura ahora?`
       );
 
       setMostrarVistaPrevia(false);
@@ -584,6 +619,10 @@ const InvoiceScreen = () => {
 
   // Calcular total
   const total = productos.reduce((sum, p) => sum + (p.cantidad * p.precio), 0);
+  const utilidadTotal = productos.reduce((sum, p) => {
+    const utilidadLinea = p.utilidad_total ?? ((toNumber(p.precio) - toNumber(p.costo_compra)) * (parseInt(p.cantidad, 10) || 0));
+    return sum + utilidadLinea;
+  }, 0);
 
   return (
     <div className="invoice-container">
@@ -830,6 +869,9 @@ const InvoiceScreen = () => {
                   </div>
                   <div className="total-preview">
                     Total: <span className="total-amount">${total.toFixed(2)}</span>
+                    <span className="total-amount" style={{ marginLeft: '10px', color: '#10b981' }}>
+                      Utilidad: ${utilidadTotal.toFixed(2)}
+                    </span>
                   </div>
                 </div>
                 <div className={`productos-grid ${vistaProductosAgregados === 'list' ? 'view-lista' : 'view-grid'}`}>
@@ -840,6 +882,9 @@ const InvoiceScreen = () => {
                         <div className="producto-precio-info">
                           <span className="producto-detalle">
                             {p.cantidad} x ${p.precio.toFixed(2)} = <strong>${(p.cantidad * p.precio).toFixed(2)}</strong>
+                          </span>
+                          <span className="producto-detalle" style={{ color: '#047857' }}>
+                            Costo: ${(toNumber(p.costo_compra) * p.cantidad).toFixed(2)} | Utilidad: ${(p.utilidad_total ?? ((toNumber(p.precio) - toNumber(p.costo_compra)) * p.cantidad)).toFixed(2)}
                           </span>
                           {erroresStock[p.id] && (
                             <span className="error-message"> - {erroresStock[p.id]}</span>
