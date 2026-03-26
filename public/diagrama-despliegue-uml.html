@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diagrama UML de Despliegue - EBS</title>
+    <style>
+      :root {
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #475569;
+        --border: #e2e8f0;
+        --accent: #1d4ed8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(160deg, #eef2ff 0%, #f8fafc 45%, #e2e8f0 100%);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 16px 32px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+        padding: 20px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.3rem, 2.5vw, 2rem);
+      }
+
+      .subtitle {
+        margin: 0 0 18px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .hint {
+        margin: 0 0 14px;
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      .diagram-wrap {
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #ffffff;
+        padding: 12px;
+      }
+
+      code {
+        background: #e2e8f0;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      .footer {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <section class="card">
+        <h1>Diagrama UML de Despliegue - e-business store (EBS)</h1>
+        <p class="subtitle">
+          Vista de nodos, artefactos y conexiones del sistema desplegado con
+          frontend React + Vite y base de datos en Supabase.
+        </p>
+        <p class="hint">Abre esta pagina en: <code>/diagrama-despliegue-uml.html</code></p>
+
+        <div class="diagram-wrap">
+          <pre class="mermaid">
+classDiagram
+direction LR
+
+class UsuarioNavegador {
+  <<device>>
+  Navegador Web
+  Chrome, Safari, Firefox, Edge
+}
+
+class HostingFrontend {
+  <<node>>
+  Hosting Frontend
+  Vercel / Netlify
+  HTTPS + CDN
+}
+
+class AppEBS {
+  <<artifact>>
+  App Web EBS
+  React + Vite (build estatico)
+  JS/CSS/HTML
+}
+
+class SupabaseAPI {
+  <<node>>
+  Supabase API Layer
+  Auth + PostgREST + Storage
+}
+
+class SupabaseDB {
+  <<database>>
+  PostgreSQL
+  Tablas de negocio
+}
+
+class Backups {
+  <<artifact>>
+  Backups automaticos
+  Retencion historica
+}
+
+class GitHubRepo {
+  <<node>>
+  GitHub Repository
+  rama main
+}
+
+class CICD {
+  <<component>>
+  Pipeline CI/CD
+  Build + Deploy
+}
+
+UsuarioNavegador --> HostingFrontend : HTTPS
+HostingFrontend --> AppEBS : entrega artefactos
+AppEBS --> SupabaseAPI : Supabase JS Client (anon key)
+SupabaseAPI --> SupabaseDB : consultas SQL / RLS
+SupabaseAPI --> Backups : tarea programada
+GitHubRepo --> CICD : trigger por push
+CICD --> HostingFrontend : despliegue automatico
+          </pre>
+        </div>
+
+        <p class="footer">
+          Si estas en desarrollo con Vite: ejecuta <code>npm run dev</code> y entra a
+          <code>http://localhost:5173/diagrama-despliegue-uml.html</code>.
+        </p>
+      </section>
+    </main>
+
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "default" });
+    </script>
+  </body>
+</html>

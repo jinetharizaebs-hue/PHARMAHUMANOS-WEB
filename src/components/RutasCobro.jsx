@@ -473,12 +473,14 @@ const RutasCobro = () => {
         else if (diasDesdePrimeraFactura > 60) puntuacion += 20;
         else if (diasDesdePrimeraFactura > 30) puntuacion += 10;
 
+        const prioridadCalculada = calcularPrioridadRuta(diasDesdePrimeraFactura, puntuacion);
+
         return {
           ...cliente,
           diasDesdePrimeraFactura,
           diasDesdeUltimaFactura,
-          puntuacionPrioridad: Math.min(100, puntuacion),
-          nivelPrioridad: calcularNivelPrioridad(puntuacion),
+          puntuacionPrioridad: prioridadCalculada.puntuacion,
+          nivelPrioridad: prioridadCalculada.nivel,
           visitadoHoy: visitadoHoy || false,
           necesitaRecordatorio: diasDesdePrimeraFactura > 60
         };
@@ -578,12 +580,14 @@ const RutasCobro = () => {
         else if (diasDesdePrimeraFactura > 60) puntuacion += 20;
         else if (diasDesdePrimeraFactura > 30) puntuacion += 10;
 
+        const prioridadCalculada = calcularPrioridadRuta(diasDesdePrimeraFactura, puntuacion);
+
         return {
           ...cliente,
           diasDesdePrimeraFactura,
           diasDesdeUltimaFactura,
-          puntuacionPrioridad: Math.min(100, puntuacion),
-          nivelPrioridad: calcularNivelPrioridad(puntuacion),
+          puntuacionPrioridad: prioridadCalculada.puntuacion,
+          nivelPrioridad: prioridadCalculada.nivel,
           visitadoHoy: false,
           necesitaRecordatorio: diasDesdePrimeraFactura > 60
         };
@@ -610,6 +614,23 @@ const RutasCobro = () => {
     }
     
     return 'Otra zona';
+  };
+
+  // Regla de negocio para rutas: más de 10 días pasa a prioridad alta.
+  const calcularPrioridadRuta = (diasDesdePrimeraFactura, puntuacionBase) => {
+    const puntuacionNormalizada = Math.min(100, puntuacionBase);
+
+    if (diasDesdePrimeraFactura > 10) {
+      return {
+        nivel: 'Alta',
+        puntuacion: Math.max(80, puntuacionNormalizada)
+      };
+    }
+
+    return {
+      nivel: calcularNivelPrioridad(puntuacionNormalizada),
+      puntuacion: puntuacionNormalizada
+    };
   };
 
   // Calcular nivel de prioridad
