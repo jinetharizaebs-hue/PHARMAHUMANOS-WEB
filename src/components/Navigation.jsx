@@ -58,6 +58,35 @@ const Navigation = () => {
       ];
     }
 
+    const normalizedUsername = (user?.username || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const isAlanDiaz = user?.id === 2 || normalizedUsername === 'alan diaz';
+
+    // Acceso especial solicitado para Alan Diaz
+    if (isAlanDiaz) {
+      return [
+        {
+          path: '#ventas',
+          label: 'Inicio & Ventas',
+          icon: '🏠',
+          tipo: 'grupo',
+          submenu: [
+            { path: '/facturacion', label: 'Inicio', icon: '🏠' },
+            { path: '/facturas', label: 'Facturas Guardadas', icon: '📄' },
+            { path: '/rutas-cobro', label: 'Rutas de Cobro', icon: '🚗' }
+          ]
+        },
+        {
+          path: '#bodega',
+          label: 'Bodega',
+          icon: '📦',
+          tipo: 'grupo',
+          submenu: [
+            { path: '/gestion-pedidos', label: 'Gestión Pedidos', icon: '🛒' }
+          ]
+        }
+      ];
+    }
+
     // Enlaces para usuarios logueados (según rol)
     if (user.role === 'superadmin') {
       return [

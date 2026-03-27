@@ -22,7 +22,7 @@ const Login = () => {
     {
       id: 102,
       username: 'inv',
-      password: '1v3nt0',
+      password: '1v3n',
       role: 'inventario',
       descripcion: 'Inventario - Gestion de catalogo, control de stock y pedidos.'
     },
@@ -50,7 +50,7 @@ const Login = () => {
     {
       id: 2,
       username: 'Alan Diaz',
-      password: 'alan123',
+      password: 'Alan2026',
       role: 'vendedor',
       descripcion: 'Vendedor - Gestion comercial y seguimiento de pedidos.'
     },
