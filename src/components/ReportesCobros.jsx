@@ -3,6 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import './ReportesCobros.css';
 
+const toLocalDateKey = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseLocalDate = (value) => {
+  if (!value || typeof value !== 'string') return null;
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+};
+
 const ReportesCobros = () => {
   const navigate = useNavigate();
   const [cargando, setCargando] = useState(true);
@@ -76,8 +90,16 @@ const ReportesCobros = () => {
       totalAbonos: totalAbonos,
       cantidadAbonos: abonosCliente.length,
       saldoDeuda: saldoDeuda,
-      facturasCliente: facturasCliente.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)),
-      abonosCliente: abonosCliente.sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+      facturasCliente: facturasCliente.sort((a, b) => {
+        const fechaA = parseLocalDate(a.fecha) || new Date(a.fecha);
+        const fechaB = parseLocalDate(b.fecha) || new Date(b.fecha);
+        return fechaB - fechaA;
+      }),
+      abonosCliente: abonosCliente.sort((a, b) => {
+        const fechaA = parseLocalDate(a.fecha) || new Date(a.fecha);
+        const fechaB = parseLocalDate(b.fecha) || new Date(b.fecha);
+        return fechaB - fechaA;
+      })
     });
   };
 
@@ -129,8 +151,8 @@ const ReportesCobros = () => {
         const hace30Dias = new Date();
         hace30Dias.setDate(hoy.getDate() - 30);
         
-        setFechaInicio(hace30Dias.toISOString().split('T')[0]);
-        setFechaFin(hoy.toISOString().split('T')[0]);
+        setFechaInicio(toLocalDateKey(hace30Dias));
+        setFechaFin(toLocalDateKey(hoy));
       } catch (error) {
         console.error("Error cargando datos desde Supabase:", error);
         alert('Error al cargar datos desde la base de datos');
@@ -155,9 +177,9 @@ const ReportesCobros = () => {
     
     // Filtrar por rango de fechas
     abonosFiltrados = abonosFiltrados.filter(abono => {
-      const fechaAbono = new Date(abono.fecha);
-      const fechaInicioObj = fechaInicio ? new Date(fechaInicio) : null;
-      const fechaFinObj = fechaFin ? new Date(fechaFin) : null;
+      const fechaAbono = parseLocalDate(abono.fecha) || new Date(abono.fecha);
+      const fechaInicioObj = fechaInicio ? parseLocalDate(fechaInicio) : null;
+      const fechaFinObj = fechaFin ? parseLocalDate(fechaFin) : null;
       
       return (!fechaInicioObj || fechaAbono >= fechaInicioObj) && 
              (!fechaFinObj || fechaAbono <= fechaFinObj);
@@ -182,7 +204,7 @@ const ReportesCobros = () => {
     
     // Abonos por mes
     const abonosPorMes = abonosFiltrados.reduce((acum, abono) => {
-      const fecha = new Date(abono.fecha);
+      const fecha = parseLocalDate(abono.fecha) || new Date(abono.fecha);
       const mes = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}`;
       const mesNombre = fecha.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
       
@@ -238,7 +260,7 @@ const ReportesCobros = () => {
     
     // Abonos por vendedor y mes
     const abonosPorVendedorMes = abonosFiltrados.reduce((acum, abono) => {
-      const fecha = new Date(abono.fecha);
+      const fecha = parseLocalDate(abono.fecha) || new Date(abono.fecha);
       const mes = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}`;
       const mesNombre = fecha.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
       const key = `${abono.vendedor}-${mes}`;
@@ -270,7 +292,11 @@ const ReportesCobros = () => {
     });
     
     return {
-      porDia: Object.values(abonosPorDia).sort((a, b) => new Date(a.fecha) - new Date(b.fecha)),
+      porDia: Object.values(abonosPorDia).sort((a, b) => {
+        const fechaA = parseLocalDate(a.fecha) || new Date(a.fecha);
+        const fechaB = parseLocalDate(b.fecha) || new Date(b.fecha);
+        return fechaA - fechaB;
+      }),
       porMes: Object.values(abonosPorMes).sort((a, b) => a.mes.localeCompare(b.mes)),
       porVendedor: vendedoresConTotales.sort((a, b) => b.total - a.total),
       porVendedorDia: Object.values(abonosPorVendedorDia),
@@ -310,7 +336,8 @@ const ReportesCobros = () => {
   // Formatear fecha
   const formatFechaLegible = (fecha) => {
     const opciones = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(fecha).toLocaleDateString('es-ES', opciones);
+    const localDate = parseLocalDate(fecha) || new Date(fecha);
+    return localDate.toLocaleDateString('es-ES', opciones);
   };
 
   // Calcular porcentaje para gráfico circular
@@ -367,7 +394,7 @@ const ReportesCobros = () => {
       abono.factura_id || abono.facturaId
     ]);
     
-    generarCSV(headers, rows, `reporte_cobros_${new Date().toISOString().slice(0, 10)}`);
+    generarCSV(headers, rows, `reporte_cobros_${toLocalDateKey()}`);
   };
 
   // 2. Exportar reporte por vendedores
@@ -381,7 +408,7 @@ const ReportesCobros = () => {
       calcularPorcentaje(vendedor.total)
     ]);
     
-    generarCSV(headers, rows, `reporte_vendedores_${new Date().toISOString().slice(0, 10)}`);
+    generarCSV(headers, rows, `reporte_vendedores_${toLocalDateKey()}`);
   };
 
   // 3. Exportar reporte diario
@@ -395,7 +422,7 @@ const ReportesCobros = () => {
       obtenerVendedorPrincipal(dia.abonos)
     ]);
     
-    generarCSV(headers, rows, `reporte_diario_${new Date().toISOString().slice(0, 10)}`);
+    generarCSV(headers, rows, `reporte_diario_${toLocalDateKey()}`);
   };
 
   // 4. Exportar reporte mensual
@@ -409,7 +436,7 @@ const ReportesCobros = () => {
       obtenerVendedorPrincipal(mes.abonos)
     ]);
     
-    generarCSV(headers, rows, `reporte_mensual_${new Date().toISOString().slice(0, 10)}`);
+    generarCSV(headers, rows, `reporte_mensual_${toLocalDateKey()}`);
   };
 
   // 5. Exportar reporte de clientes
@@ -424,7 +451,7 @@ const ReportesCobros = () => {
         [...new Set(cliente.abonos.map(a => a.vendedor))].join(', ')
       ]);
     
-    generarCSV(headers, rows, `reporte_clientes_${new Date().toISOString().slice(0, 10)}`);
+    generarCSV(headers, rows, `reporte_clientes_${toLocalDateKey()}`);
   };
 
   // 6. Exportar reporte diario por vendedor
@@ -438,7 +465,7 @@ const ReportesCobros = () => {
       (item.total / item.cantidad).toFixed(2)
     ]);
     
-    generarCSV(headers, rows, `reporte_diario_vendedor_${new Date().toISOString().slice(0, 10)}`);
+    generarCSV(headers, rows, `reporte_diario_vendedor_${toLocalDateKey()}`);
   };
 
   // 7. Exportar reporte mensual por vendedor
@@ -452,7 +479,7 @@ const ReportesCobros = () => {
       (item.total / item.cantidad).toFixed(2)
     ]);
     
-    generarCSV(headers, rows, `reporte_mensual_vendedor_${new Date().toISOString().slice(0, 10)}`);
+    generarCSV(headers, rows, `reporte_mensual_vendedor_${toLocalDateKey()}`);
   };
 
   // Renderizar vista de resumen general
@@ -691,8 +718,8 @@ const ReportesCobros = () => {
                             const firstDay = new Date(year, month - 1, 1);
                             const lastDay = new Date(year, month, 0);
                             
-                            setFechaInicio(firstDay.toISOString().split('T')[0]);
-                            setFechaFin(lastDay.toISOString().split('T')[0]);
+                            setFechaInicio(toLocalDateKey(firstDay));
+                            setFechaFin(toLocalDateKey(lastDay));
                             setVistaActual('mensual');
                             setPeriodoActual(mes.mes);
                           }}
@@ -1014,7 +1041,7 @@ const ReportesCobros = () => {
                   type="date" 
                   value={fechaInicio}
                   onChange={e => setFechaInicio(e.target.value)}
-                  max={fechaFin || new Date().toISOString().split('T')[0]}
+                  max={fechaFin || toLocalDateKey()}
                 />
               </label>
               
@@ -1025,7 +1052,7 @@ const ReportesCobros = () => {
                   value={fechaFin}
                   onChange={e => setFechaFin(e.target.value)}
                   min={fechaInicio}
-                  max={new Date().toISOString().split('T')[0]}
+                  max={toLocalDateKey()}
                 />
               </label>
             </div>
@@ -1197,7 +1224,7 @@ const ReportesCobros = () => {
                           return (
                             <tr key={idx} className={pendiente > 0 ? 'pendiente' : 'pagada'}>
                               <td><strong>{factura.id}</strong></td>
-                              <td>{new Date(factura.fecha).toLocaleDateString('es-CO')}</td>
+                              <td>{formatFechaLegible(factura.fecha)}</td>
                               <td>{formatMoneda(factura.total)}</td>
                               <td className="abonado">{formatMoneda(abonoFactura)}</td>
                               <td className={pendiente > 0 ? 'deuda' : 'pagado'}>
@@ -1230,7 +1257,7 @@ const ReportesCobros = () => {
                       <tbody>
                         {resumenCliente.abonosCliente.map((abono, idx) => (
                           <tr key={idx}>
-                            <td>{new Date(abono.fecha).toLocaleDateString('es-CO')}</td>
+                            <td>{formatFechaLegible(abono.fecha)}</td>
                             <td><strong>{abono.factura_id}</strong></td>
                             <td className="monto">{formatMoneda(abono.monto)}</td>
                             <td>{abono.vendedor}</td>

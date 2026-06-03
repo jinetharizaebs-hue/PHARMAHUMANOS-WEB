@@ -3,6 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import './GestionPedidos.css';
 
+const PAGE_SIZE = 1000;
+
+const fetchAllPedidos = async () => {
+  let from = 0;
+  let allRows = [];
+
+  while (true) {
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from('pedidos')
+      .select('*')
+      .order('fecha_creacion', { ascending: false })
+      .range(from, to);
+
+    if (error) throw error;
+
+    const batch = data || [];
+    allRows = allRows.concat(batch);
+
+    if (batch.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+
+  return allRows;
+};
+
 const GestionPedidos = () => {
   const navigate = useNavigate();
   const [pedidos, setPedidos] = useState([]);
@@ -24,14 +50,7 @@ const GestionPedidos = () => {
   const cargarPedidos = async () => {
     try {
       setCargando(true);
-      let query = supabase.from('pedidos').select('*').order('fecha_creacion', { ascending: false });
-
-      if (filtroEstado !== 'todos') {
-        query = query.eq('estado', filtroEstado);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
+      const data = await fetchAllPedidos();
       
       setPedidos(data || []);
       await cargarEstadosPreparacion(data || []);
@@ -281,7 +300,7 @@ ${pedido.direccion_entrega ? `• Dirección: ${pedido.direccion_entrega}` : ''}
 ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${pedido.cliente_notas}` : ''}
 
 ¡Gracias por tu compra! 🎉
-*DISTRIBUIDORA FARMACEUTICA MARANATHA J.A.*`;
+*DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A*`;
 
     return encodeURIComponent(mensaje);
   };
@@ -334,6 +353,7 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
           telefono: pedido.cliente_telefono,
           direccion: pedido.direccion_entrega || '',
           vendedor: pedido.vendedor || '',
+          cliente_notas: pedido.cliente_notas || '',
           productos: pedido.productos.map(p => ({
             id: Date.now() + Math.random(),
             nombre: p.nombre,
@@ -429,11 +449,15 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
 
   // Función para filtrar pedidos por búsqueda
   const filtrarPedidos = (pedidosData) => {
-    if (!busqueda.trim()) return pedidosData;
+    const pedidosPorEstado = filtroEstado === 'todos'
+      ? pedidosData
+      : pedidosData.filter(pedido => pedido.estado === filtroEstado);
+
+    if (!busqueda.trim()) return pedidosPorEstado;
 
     const terminoBusqueda = busqueda.toLowerCase().trim();
 
-    return pedidosData.filter(pedido => {
+    return pedidosPorEstado.filter(pedido => {
       if (tipoBusqueda === 'cliente') {
         // Buscar por nombre de cliente
         const nombreCliente = (pedido.cliente_nombre || '').toLowerCase();
@@ -630,7 +654,7 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
   return (
     <div className="gestion-pedidos">
       <header className="header-gestion">
-        <h1>🏪 Gestión de Pedidos - DISTRIBUIDORA FARMACEUTICA MARANATHA J.A.</h1>
+        <h1>🏪 Gestión de Pedidos - DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A</h1>
         <p>Sistema de seguimiento y preparación de pedidos</p>
       </header>
 
@@ -1115,7 +1139,7 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
                     
                     <a 
                       href={validarTelefonoColombia(pedido.cliente_telefono)
-                        ? `https://wa.me/${normalizarTelefonoWhatsApp(pedido.cliente_telefono)}?text=Hola ${encodeURIComponent(pedido.cliente_nombre)}, soy de DISTRIBUIDORA FARMACEUTICA MARANATHA J.A. Tu pedido #${pedido.id} (${formatPrecio(pedido.total)}) está: ${getTextoEstado(pedido.estado)}`
+                        ? `https://wa.me/${normalizarTelefonoWhatsApp(pedido.cliente_telefono)}?text=Hola ${encodeURIComponent(pedido.cliente_nombre)}, soy de DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A. Tu pedido #${pedido.id} (${formatPrecio(pedido.total)}) está: ${getTextoEstado(pedido.estado)}`
                         : '#'
                       }
                       target="_blank"

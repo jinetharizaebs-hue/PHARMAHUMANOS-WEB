@@ -12,6 +12,9 @@ const FacturaPreview = ({ factura, onVolver, onGuardar, cargando }) => {
             <p><b>Cliente:</b> {factura.cliente || "No especificado"}</p>
             <p><b>Fecha:</b> {factura.fecha || "No especificada"}</p>
             <p><b>Vendedor:</b> {factura.vendedor || "No especificado"}</p>
+            {factura.notaCliente && (
+              <p><b>Nota del cliente:</b> {factura.notaCliente}</p>
+            )}
           </div>
           <div className="columna-datos">
             <p><b>Dirección:</b> {factura.direccion || "No especificada"}</p>

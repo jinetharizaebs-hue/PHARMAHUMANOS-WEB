@@ -3,6 +3,20 @@ import { supabase } from './supabaseClient';
 import * as XLSX from 'xlsx';
 import './ReporteClientesPorProducto.css';
 
+const toLocalDateKey = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseLocalDate = (value) => {
+  if (!value || typeof value !== 'string') return null;
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+};
+
 const ReporteClientesPorProducto = () => {
   const [productos, setProductos] = useState([]);
   const [facturas, setFacturas] = useState([]);
@@ -67,13 +81,13 @@ const { data: productosData, error: productosError } = await supabase
     
     if (fechaInicio) {
       facturasFiltradas = facturasFiltradas.filter(f => 
-        new Date(f.fecha) >= new Date(fechaInicio)
+        (parseLocalDate(f.fecha) || new Date(f.fecha)) >= parseLocalDate(fechaInicio)
       );
     }
     
     if (fechaFin) {
       facturasFiltradas = facturasFiltradas.filter(f => 
-        new Date(f.fecha) <= new Date(fechaFin)
+        (parseLocalDate(f.fecha) || new Date(f.fecha)) <= parseLocalDate(fechaFin)
       );
     }
 
@@ -122,10 +136,10 @@ const { data: productosData, error: productosError } = await supabase
           });
 
           // Actualizar fechas
-          if (new Date(factura.fecha) > new Date(clientesMap[cliente].ultimaCompra)) {
+          if ((parseLocalDate(factura.fecha) || new Date(factura.fecha)) > (parseLocalDate(clientesMap[cliente].ultimaCompra) || new Date(clientesMap[cliente].ultimaCompra))) {
             clientesMap[cliente].ultimaCompra = factura.fecha;
           }
-          if (new Date(factura.fecha) < new Date(clientesMap[cliente].primeraCompra)) {
+          if ((parseLocalDate(factura.fecha) || new Date(factura.fecha)) < (parseLocalDate(clientesMap[cliente].primeraCompra) || new Date(clientesMap[cliente].primeraCompra))) {
             clientesMap[cliente].primeraCompra = factura.fecha;
           }
         }
@@ -191,7 +205,8 @@ const { data: productosData, error: productosError } = await supabase
   };
 
   const formatFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString('es-CO', {
+    const localDate = parseLocalDate(fecha) || new Date(fecha);
+    return localDate.toLocaleDateString('es-CO', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -223,7 +238,7 @@ const { data: productosData, error: productosError } = await supabase
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `reporte_clientes_${productoSeleccionado.nombre.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `reporte_clientes_${productoSeleccionado.nombre.replace(/\s+/g, '_')}_${toLocalDateKey()}.csv`;
     link.click();
   };
 
@@ -259,7 +274,7 @@ const { data: productosData, error: productosError } = await supabase
       { wch: 15 }  // Última Compra
     ];
 
-    const fileName = `reporte_clientes_${productoSeleccionado.nombre.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const fileName = `reporte_clientes_${productoSeleccionado.nombre.replace(/\s+/g, '_')}_${toLocalDateKey()}.xlsx`;
     XLSX.writeFile(wb, fileName);
   };
 

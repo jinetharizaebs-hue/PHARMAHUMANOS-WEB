@@ -4,6 +4,33 @@ import { supabase } from './supabaseClient';
 import { useAuth } from '../App';
 import './FacturaDetalle.css';
 
+const getLocalDateForInput = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateAsLocal = (value) => {
+  if (!value || typeof value !== 'string') return null;
+
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+
+  return new Date(year, month - 1, day);
+};
+
+const getNotaClienteFactura = (facturaData) => {
+  if (!facturaData?.productos || !Array.isArray(facturaData.productos)) return '';
+
+  const nota = facturaData.productos.find(
+    (producto) => typeof producto?.nota_cliente === 'string' && producto.nota_cliente.trim()
+  )?.nota_cliente;
+
+  return nota ? nota.trim() : '';
+};
+
 const FacturaDetalle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -14,7 +41,7 @@ const FacturaDetalle = () => {
   const [abonos, setAbonos] = useState([]);
   const [nuevoAbono, setNuevoAbono] = useState({
     monto: '',
-    fecha: new Date().toISOString().split('T')[0],
+    fecha: getLocalDateForInput(),
     metodo: 'Efectivo',
     nota: ''
   });
@@ -151,9 +178,10 @@ const FacturaDetalle = () => {
       Total: $${factura.total.toFixed(2)}
       Utilidad Total: $${utilidadTotal.toFixed(2)}
       Total en letras: ${convertirNumeroALetras(Math.round(factura.total))}
+      ${getNotaClienteFactura(factura) ? `Notas del cliente: ${getNotaClienteFactura(factura)}` : ''}
       Saldo Pendiente: $${(factura.total - calcularTotalAbonado()).toFixed(2)}
       Productos: ${factura.productos.map(p => `\n  - ${p.nombre} (${p.cantidad} x $${p.precio.toFixed(2)}) | Utilidad: $${(p.utilidad_total ?? ((p.precio - (p.costo_compra || 0)) * p.cantidad)).toFixed(2)}`).join('')}
-      Abonos: ${abonos.length > 0 ? abonos.map(a => `\n  - $${a.monto.toFixed(2)} (${new Date(a.fecha).toLocaleDateString()})`).join('') : ' Ninguno'}
+      Abonos: ${abonos.length > 0 ? abonos.map(a => `\n  - $${a.monto.toFixed(2)} (${formatearFecha(a.fecha)})`).join('') : ' Ninguno'}
     `;
     navigator.clipboard.writeText(datos);
     setCopiado(true);
@@ -164,6 +192,7 @@ const FacturaDetalle = () => {
     // Abrir ventana de impresión con el diseño específico para papel oficio horizontal
     const ventanaImpresion = window.open('', '_blank', 'width=1000,height=800');
     const logoFacturaUrl = `${window.location.origin}/logo-maranatha.png`;
+    const notaClienteFactura = getNotaClienteFactura(factura);
     
     const contenidoImpresion = `
       <!DOCTYPE html>
@@ -335,6 +364,14 @@ const FacturaDetalle = () => {
               font-weight: bold;
               line-height: 1;
             }
+            .nota-cliente-impresion {
+              margin-top: 0.08cm;
+              border: 1px dashed #000;
+              padding: 0.08cm;
+              font-size: 7px;
+              text-transform: uppercase;
+              line-height: 1.2;
+            }
             .resumen-total {
               display: grid;
               grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -471,7 +508,7 @@ const FacturaDetalle = () => {
                   <div class="empresa-logo-wrap">
                     <img class="empresa-logo" src="${logoFacturaUrl}" alt="Logo Maranatha" onerror="this.style.display='none'" />
                   </div>
-                  <div class="empresa-nombre"><strong>DISTRIBUIDORA MARANATHA J.A</strong></div>
+                  <div class="empresa-nombre"><strong>DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A</strong></div>
                   <div class="empresa-detalle">NIT. 80741957-3</div>
                   <div class="empresa-detalle">Bogotá Cel. 301 601 7182</div>
                   <div class="empresa-detalle">Soacha Cel. 319 209 1629</div>
@@ -522,6 +559,7 @@ const FacturaDetalle = () => {
               </table>              <div class="total-letras">
                 <strong>SON: ${convertirNumeroALetras(Math.round(factura.total))}</strong>
               </div>
+              ${notaClienteFactura ? `<div class="nota-cliente-impresion"><strong>NOTAS DEL CLIENTE:</strong> ${notaClienteFactura}</div>` : ''}
               
               <div class="resumen-total">
                 <div class="resumen-item">
@@ -554,7 +592,7 @@ const FacturaDetalle = () => {
                 <div class="footer-payment">NEQUI Y DAVIPLATA: <span class="llave-nequi">3016017182</span></div>
                 <div class="footer-payment">BREVE: <span class="llave-nequi">80741957</span></div>
                 <div class="footer-payment">BANCOLOMBIA AHORROS: <span class="llave-nequi">09414650365</span></div>
-                <div class="logo">Distribuidora Farmaceutica Maranatha J.A</div>
+                <div class="logo">DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A</div>
               </div>
             </div>
             
@@ -566,7 +604,7 @@ const FacturaDetalle = () => {
                   <div class="empresa-logo-wrap">
                     <img class="empresa-logo" src="${logoFacturaUrl}" alt="Logo Maranatha" onerror="this.style.display='none'" />
                   </div>
-                  <div class="empresa-nombre"><strong>DISTRIBUIDORA MARANATHA J.A</strong></div>
+                  <div class="empresa-nombre"><strong>DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A</strong></div>
                   <div class="empresa-detalle">NIT. 80741957-3</div>
                   <div class="empresa-detalle">Bogotá Cel. 301 601 7182</div>
                   <div class="empresa-detalle">Soacha Cel. 319 209 1629</div>
@@ -617,6 +655,7 @@ const FacturaDetalle = () => {
               </table>              <div class="total-letras">
                 <strong>SON: ${convertirNumeroALetras(Math.round(factura.total))}</strong>
               </div>
+              ${notaClienteFactura ? `<div class="nota-cliente-impresion"><strong>NOTAS DEL CLIENTE:</strong> ${notaClienteFactura}</div>` : ''}
               
               <div class="resumen-total">
                 <div class="resumen-item">
@@ -649,7 +688,7 @@ const FacturaDetalle = () => {
                 <div class="footer-payment">NEQUI Y DAVIPLATA: <span class="llave-nequi">3016017182</span></div>
                 <div class="footer-payment">BREVE: <span class="llave-nequi">80741957</span></div>
                 <div class="footer-payment">BANCOLOMBIA AHORROS: <span class="llave-nequi">09414650365</span></div>
-                <div class="logo">Distribuidora Farmaceutica Maranatha J.A</div>
+                <div class="logo">DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A</div>
               </div>
             </div>
           </div>
@@ -713,7 +752,7 @@ const FacturaDetalle = () => {
       const abonoData = {
         factura_id: Number(id),
         monto: nuevoAbono.monto,
-        fecha: nuevoAbono.fecha || new Date().toISOString().split('T')[0],
+        fecha: nuevoAbono.fecha || getLocalDateForInput(),
         metodo: nuevoAbono.metodo,
         nota: nuevoAbono.nota || null
       };
@@ -740,7 +779,7 @@ const FacturaDetalle = () => {
       mensaje += `Cliente: ${factura.cliente}\n`;
       mensaje += `Total Factura: ${formatearMoneda(factura.total)}\n\n`;
       mensaje += `Abono Agregado: ${formatearMoneda(data[0].monto)}\n`;
-      mensaje += `Fecha Abono: ${new Date(data[0].fecha).toLocaleDateString('es-CO')}\n`;
+      mensaje += `Fecha Abono: ${formatearFecha(data[0].fecha)}\n`;
       mensaje += `Método: ${data[0].metodo}\n`;
       if (data[0].nota) {
         mensaje += `Nota: ${data[0].nota}\n`;
@@ -767,7 +806,7 @@ const FacturaDetalle = () => {
       // Resetear formulario
       setNuevoAbono({
         monto: '',
-        fecha: new Date().toISOString().split('T')[0],
+        fecha: getLocalDateForInput(),
         metodo: 'Efectivo',
         nota: ''
       });
@@ -786,7 +825,7 @@ const FacturaDetalle = () => {
 
     // Solicitar contraseña para editar
     const password = prompt('Ingrese la contraseña para editar el abono:');
-    if (password !== 'edwin') {
+    if (password !== 'edwin' && password !== 'Maranatha0425') {
       alert('❌ Contraseña incorrecta. No se puede editar el abono.');
       return;
     }
@@ -818,7 +857,7 @@ const FacturaDetalle = () => {
       setEditandoAbono(null);
       setNuevoAbono({
         monto: '',
-        fecha: new Date().toISOString().split('T')[0],
+        fecha: getLocalDateForInput(),
         metodo: 'Efectivo',
         nota: ''
       });
@@ -837,7 +876,7 @@ const FacturaDetalle = () => {
 
     // Solicitar contraseña para eliminar
     const password = prompt('Ingrese la contraseña para eliminar el abono:');
-    if (password !== 'edwin') {
+    if (password !== 'edwin' && password !== 'Maranatha0425') {
       alert('❌ Contraseña incorrecta. No se puede eliminar el abono.');
       return;
     }
@@ -878,7 +917,7 @@ const FacturaDetalle = () => {
     setEditandoAbono(null);
     setNuevoAbono({
       monto: '',
-      fecha: new Date().toISOString().split('T')[0],
+      fecha: getLocalDateForInput(),
       metodo: 'Efectivo',
       nota: ''
     });
@@ -900,7 +939,8 @@ const FacturaDetalle = () => {
   };
 
   const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString('es-ES', {
+    const localDate = parseDateAsLocal(fecha) || new Date(fecha);
+    return localDate.toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -987,6 +1027,11 @@ const FacturaDetalle = () => {
         <div className="total-letras">
           <strong>SON: {convertirNumeroALetras(Math.round(factura.total))}</strong>
         </div>
+        {getNotaClienteFactura(factura) && (
+          <div className="nota-cliente-factura">
+            <strong>NOTAS DEL CLIENTE:</strong> {getNotaClienteFactura(factura)}
+          </div>
+        )}
       </div>
 
       <div className="factura-info-grid">

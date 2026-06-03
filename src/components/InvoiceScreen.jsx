@@ -6,6 +6,14 @@ import { supabase } from './supabaseClient';
 import './InvoiceScreen.css';
 import { useAuth } from '../App';
 
+const getLocalDateForInput = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const InvoiceScreen = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -13,7 +21,7 @@ const InvoiceScreen = () => {
   
   // Estados principales
   const [cliente, setCliente] = useState('');
-  const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
+  const [fecha, setFecha] = useState(getLocalDateForInput());
   const [direccion, setDireccion] = useState('');
   const [telefono, setTelefono] = useState('');
   const [correo, setCorreo] = useState('');
@@ -40,6 +48,7 @@ const InvoiceScreen = () => {
   const [clientes, setClientes] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [erroresStock, setErroresStock] = useState({});
+  const [notaCliente, setNotaCliente] = useState('');
   
   // Estados para vista de productos agregados
   const [vistaProductosAgregados, setVistaProductosAgregados] = useState('grid'); // 'grid' o 'list'
@@ -56,6 +65,11 @@ const InvoiceScreen = () => {
       setCorreo(pedidoData.correo || '');
       setVendedorSeleccionado(pedidoData.vendedor || '');
       setProductos(pedidoData.productos || []);
+      setNotaCliente(
+        pedidoData.cliente_notas && pedidoData.cliente_notas !== 'Ninguna'
+          ? pedidoData.cliente_notas
+          : ''
+      );
       
       // Limpiar el state para que no se recargue al volver
       window.history.replaceState({}, document.title);
@@ -529,11 +543,13 @@ const InvoiceScreen = () => {
   // Función para limpiar el formulario
   const limpiarFormulario = () => {
     setCliente('');
+    setFecha(getLocalDateForInput());
     setDireccion('');
     setTelefono('');
     setCorreo('');
     setProductos([]);
     setVendedorSeleccionado('');
+    setNotaCliente('');
     setErroresStock({});
   };
 
@@ -543,7 +559,13 @@ const InvoiceScreen = () => {
       setCargando(true);
       
       const productosConRentabilidad = productos.map((p) => calcularMetricasRentabilidad(p));
-      const utilidadTotalFactura = productosConRentabilidad.reduce((sum, p) => sum + (p.utilidad_total || 0), 0);
+      const notaClienteLimpia = (notaCliente || '').trim();
+      const productosConNotaCliente = productosConRentabilidad.map((producto, index) => (
+        index === 0
+          ? { ...producto, nota_cliente: notaClienteLimpia || null }
+          : producto
+      ));
+      const utilidadTotalFactura = productosConNotaCliente.reduce((sum, p) => sum + (p.utilidad_total || 0), 0);
 
       const facturaData = {
         cliente,
@@ -552,8 +574,8 @@ const InvoiceScreen = () => {
         direccion: direccion || null,
         telefono: telefono || null,
         correo: correo || null,
-        productos: productosConRentabilidad,
-        total: productosConRentabilidad.reduce((sum, p) => sum + (p.cantidad * p.precio), 0),
+        productos: productosConNotaCliente,
+        total: productosConNotaCliente.reduce((sum, p) => sum + (p.cantidad * p.precio), 0),
       };
 
       const { data, error } = await supabase
@@ -636,6 +658,7 @@ const InvoiceScreen = () => {
             direccion,
             telefono,
             correo,
+            notaCliente,
             productos,
             total: total,
           }}

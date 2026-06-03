@@ -4,6 +4,42 @@ import { supabase } from './supabaseClient';
 import * as XLSX from 'xlsx';
 import './FacturasGuardadas.css';
 
+const parseLocalDate = (value) => {
+  if (!value || typeof value !== 'string') return null;
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+};
+
+const PAGE_SIZE = 1000;
+
+const fetchAllRows = async (table, orderColumn = 'id', ascending = false) => {
+  let from = 0;
+  let allRows = [];
+
+  while (true) {
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .order(orderColumn, { ascending })
+      .range(from, to);
+
+    if (error) throw error;
+
+    const batch = data || [];
+    allRows = allRows.concat(batch);
+
+    if (batch.length < PAGE_SIZE) {
+      break;
+    }
+
+    from += PAGE_SIZE;
+  }
+
+  return allRows;
+};
+
 const FacturasGuardadas = () => {
   const navigate = useNavigate();
   const [facturas, setFacturas] = useState([]);
@@ -29,19 +65,9 @@ const FacturasGuardadas = () => {
     const cargarDatos = async () => {
       try {
         setCargando(true);
-        
-        const { data: facturasData, error: facturasError } = await supabase
-          .from('facturas')
-          .select('*')
-          .order('fecha', { ascending: false });
-        
-        if (facturasError) throw facturasError;
-        
-        const { data: abonosData, error: abonosError } = await supabase
-          .from('abonos')
-          .select('*');
-        
-        if (abonosError) throw abonosError;
+
+        const facturasData = await fetchAllRows('facturas', 'id', false);
+        const abonosData = await fetchAllRows('abonos', 'id', false);
         
         setFacturas(facturasData || []);
         setAbonos(abonosData || []);
@@ -107,7 +133,11 @@ const FacturasGuardadas = () => {
       return coincideBusqueda && coincideVendedor && mostrarPorEstado;
     }).sort((a, b) => {
       switch (orden) {
-        case 'antiguos': return new Date(a.fecha) - new Date(b.fecha);
+        case 'antiguos': {
+          const fechaA = parseLocalDate(a.fecha) || new Date(a.fecha);
+          const fechaB = parseLocalDate(b.fecha) || new Date(b.fecha);
+          return fechaA - fechaB;
+        }
         case 'mayor-total': return b.total - a.total;
         case 'menor-total': return a.total - b.total;
         case 'mayor-saldo': return (b.saldo || 0) - (a.saldo || 0);
@@ -116,7 +146,11 @@ const FacturasGuardadas = () => {
         case 'alfabetico-za': return b.cliente?.localeCompare(a.cliente || '');
         case 'mayor-numero': return b.id - a.id;
         case 'menor-numero': return a.id - b.id;
-        default: return new Date(b.fecha) - new Date(a.fecha);
+        default: {
+          const fechaA = parseLocalDate(a.fecha) || new Date(a.fecha);
+          const fechaB = parseLocalDate(b.fecha) || new Date(b.fecha);
+          return fechaB - fechaA;
+        }
       }
     }),
     abonos
@@ -487,13 +521,8 @@ const FacturasGuardadas = () => {
           if (abonosError) throw abonosError;
         }
 
-        const { data: nuevasFacturas } = await supabase
-          .from('facturas')
-          .select('*');
-        
-        const { data: nuevosAbonos } = await supabase
-          .from('abonos')
-          .select('*');
+        const nuevasFacturas = await fetchAllRows('facturas', 'id', false);
+        const nuevosAbonos = await fetchAllRows('abonos', 'id', false);
         
         setFacturas(nuevasFacturas || []);
         setAbonos(nuevosAbonos || []);
@@ -529,7 +558,8 @@ const FacturasGuardadas = () => {
   // Formatear fecha
   const formatFecha = (fechaISO) => {
     const opciones = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(fechaISO).toLocaleDateString('es-ES', opciones);
+    const fechaLocal = parseLocalDate(fechaISO) || new Date(fechaISO);
+    return fechaLocal.toLocaleDateString('es-ES', opciones);
   };
 
   // Formatear moneda
