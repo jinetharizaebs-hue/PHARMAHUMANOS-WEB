@@ -3,30 +3,40 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import './GestionPedidos.css';
 
-const PAGE_SIZE = 1000;
+const PAGE_SIZE = 200;
 
-const fetchAllPedidos = async () => {
-  let from = 0;
-  let allRows = [];
+const fetchPedidosPage = async ({
+  offset = 0,
+  limit = PAGE_SIZE,
+  estado = 'todos',
+  tipoBusqueda = 'cliente',
+  termino = ''
+}) => {
+  const texto = (termino || '').trim();
 
-  while (true) {
-    const to = from + PAGE_SIZE - 1;
-    const { data, error } = await supabase
-      .from('pedidos')
-      .select('*')
-      .order('fecha_creacion', { ascending: false })
-      .range(from, to);
+  let query = supabase
+    .from('pedidos')
+    .select('*', { count: 'exact' })
+    .order('fecha_creacion', { ascending: false })
+    .range(offset, offset + limit - 1);
 
-    if (error) throw error;
-
-    const batch = data || [];
-    allRows = allRows.concat(batch);
-
-    if (batch.length < PAGE_SIZE) break;
-    from += PAGE_SIZE;
+  if (estado !== 'todos') {
+    query = query.eq('estado', estado);
   }
 
-  return allRows;
+  if (texto) {
+    if (tipoBusqueda === 'cliente') {
+      query = query.ilike('cliente_nombre', `%${texto}%`);
+    } else {
+      const idBuscado = Number(texto);
+      if (!Number.isInteger(idBuscado)) {
+        return { data: [], error: null, count: 0 };
+      }
+      query = query.eq('id', idBuscado);
+    }
+  }
+
+  return query;
 };
 
 const GestionPedidos = () => {
@@ -42,23 +52,68 @@ const GestionPedidos = () => {
   // Estados para búsqueda
   const [busqueda, setBusqueda] = useState('');
   const [tipoBusqueda, setTipoBusqueda] = useState('cliente'); // 'cliente' o 'pedido'
+  const [busquedaDebounced, setBusquedaDebounced] = useState('');
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const [hayMasPedidos, setHayMasPedidos] = useState(false);
+  const [cargandoMas, setCargandoMas] = useState(false);
+  const [pedidosSeleccionados, setPedidosSeleccionados] = useState([]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBusquedaDebounced(busqueda);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [busqueda]);
 
   useEffect(() => {
     cargarPedidos();
-  }, [filtroEstado]);
+  }, [filtroEstado, tipoBusqueda, busquedaDebounced]);
 
-  const cargarPedidos = async () => {
+  const cargarPedidos = async ({ append = false } = {}) => {
     try {
-      setCargando(true);
-      const data = await fetchAllPedidos();
-      
-      setPedidos(data || []);
-      await cargarEstadosPreparacion(data || []);
-      await cargarImagenesProductos(data || []);
+      if (append) {
+        setCargandoMas(true);
+      } else {
+        setCargando(true);
+      }
+
+      const siguientePagina = append ? paginaActual + 1 : 1;
+      const offset = (siguientePagina - 1) * PAGE_SIZE;
+
+      const { data, error, count } = await fetchPedidosPage({
+        offset,
+        limit: PAGE_SIZE,
+        estado: filtroEstado,
+        tipoBusqueda,
+        termino: busquedaDebounced
+      });
+
+      if (error) throw error;
+
+      const nuevosPedidos = data || [];
+      const pedidosCombinados = append ? [...pedidos, ...nuevosPedidos] : nuevosPedidos;
+
+      setPedidos(pedidosCombinados);
+      setPaginaActual(siguientePagina);
+      setTotalRegistros(count || 0);
+      setHayMasPedidos((offset + nuevosPedidos.length) < (count || 0));
+
+      if (!append) {
+        setPedidosSeleccionados([]);
+      }
+
+      await cargarEstadosPreparacion(pedidosCombinados);
+      await cargarImagenesProductos(pedidosCombinados);
     } catch (error) {
       console.error('Error cargando pedidos:', error);
     } finally {
-      setCargando(false);
+      if (append) {
+        setCargandoMas(false);
+      } else {
+        setCargando(false);
+      }
     }
   };
 
@@ -279,6 +334,81 @@ const GestionPedidos = () => {
     }
   };
 
+
+  const toggleSeleccionPedido = (pedidoId) => {
+    setPedidosSeleccionados((prev) => (
+      prev.includes(pedidoId)
+        ? prev.filter((id) => id !== pedidoId)
+        : [...prev, pedidoId]
+    ));
+  };
+
+  const seleccionarPendientesVisibles = () => {
+    const idsPendientesVisibles = filtrarPedidos(pedidos)
+      .filter((pedido) => pedido.estado === 'pendiente')
+      .map((pedido) => pedido.id);
+
+    setPedidosSeleccionados(idsPendientesVisibles);
+  };
+
+  const limpiarSeleccionPedidos = () => {
+    setPedidosSeleccionados([]);
+  };
+
+  const cancelarPedidosSeleccionados = async () => {
+    try {
+      if (pedidosSeleccionados.length === 0) {
+        alert('Selecciona al menos un pedido para cancelar.');
+        return;
+      }
+
+      const pedidosPendientesSeleccionados = filtrarPedidos(pedidos).filter(
+        (pedido) => pedidosSeleccionados.includes(pedido.id) && pedido.estado === 'pendiente'
+      );
+
+      if (pedidosPendientesSeleccionados.length === 0) {
+        alert('Los pedidos seleccionados no están en estado pendiente.');
+        return;
+      }
+
+      const idsCancelar = pedidosPendientesSeleccionados.map((pedido) => pedido.id);
+
+      const confirmar = window.confirm(
+        `Vas a cancelar ${idsCancelar.length} pedido(s) seleccionados.\n\n¿Deseas continuar?`
+      );
+
+      if (!confirmar) return;
+
+      const validacion = window.prompt('Escribe CANCELAR para confirmar la cancelación de seleccionados:');
+      if (validacion !== 'CANCELAR') {
+        alert('Acción cancelada. Confirmación inválida.');
+        return;
+      }
+
+      setCargando(true);
+
+      const { error } = await supabase
+        .from('pedidos')
+        .update({
+          estado: 'cancelado',
+          fecha_actualizacion: new Date().toISOString()
+        })
+        .in('id', idsCancelar)
+        .eq('estado', 'pendiente');
+
+      if (error) throw error;
+
+      alert(`✅ Se cancelaron ${idsCancelar.length} pedido(s) seleccionados.`);
+      setPedidosSeleccionados([]);
+      await cargarPedidos();
+    } catch (error) {
+      console.error('Error cancelando pedidos seleccionados:', error);
+      alert('Error al cancelar pedidos seleccionados: ' + error.message);
+    } finally {
+      setCargando(false);
+    }
+  };
+
   // Función para generar el mensaje del pedido completo
   const generarMensajePedido = (pedido) => {
     const productosTexto = pedido.productos?.map(producto => 
@@ -349,6 +479,7 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
     navigate('/facturacion', {
       state: {
         pedidoData: {
+          pedido_id: pedido.id,
           cliente: pedido.cliente_nombre,
           telefono: pedido.cliente_telefono,
           direccion: pedido.direccion_entrega || '',
@@ -449,25 +580,7 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
 
   // Función para filtrar pedidos por búsqueda
   const filtrarPedidos = (pedidosData) => {
-    const pedidosPorEstado = filtroEstado === 'todos'
-      ? pedidosData
-      : pedidosData.filter(pedido => pedido.estado === filtroEstado);
-
-    if (!busqueda.trim()) return pedidosPorEstado;
-
-    const terminoBusqueda = busqueda.toLowerCase().trim();
-
-    return pedidosPorEstado.filter(pedido => {
-      if (tipoBusqueda === 'cliente') {
-        // Buscar por nombre de cliente
-        const nombreCliente = (pedido.cliente_nombre || '').toLowerCase();
-        return nombreCliente.includes(terminoBusqueda);
-      } else {
-        // Buscar por ID de pedido
-        const idPedido = String(pedido.id || '');
-        return idPedido.includes(terminoBusqueda);
-      }
-    });
+    return pedidosData;
   };
 
   // Función para limpiar búsqueda
@@ -707,6 +820,36 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
         <button onClick={cargarPedidos} className="btn-actualizar">
           🔄 Actualizar
         </button>
+
+      </div>
+
+      <div className="resumen-carga-pedidos">
+        Mostrando {pedidos.length} de {totalRegistros} pedidos
+      </div>
+
+      <div className="acciones-seleccion-pedidos">
+        <span className="seleccion-label">Seleccionados: {pedidosSeleccionados.length}</span>
+        <button
+          onClick={seleccionarPendientesVisibles}
+          className="btn-seleccion"
+          disabled={cargando || cargandoMas}
+        >
+          Seleccionar pendientes visibles
+        </button>
+        <button
+          onClick={limpiarSeleccionPedidos}
+          className="btn-seleccion"
+          disabled={pedidosSeleccionados.length === 0 || cargando || cargandoMas}
+        >
+          Limpiar selección
+        </button>
+        <button
+          onClick={cancelarPedidosSeleccionados}
+          className="btn-cancelar-seleccionados"
+          disabled={pedidosSeleccionados.length === 0 || cargando || cargandoMas}
+        >
+          🚫 Cancelar seleccionados
+        </button>
       </div>
 
       <div className="estadisticas-rapidas">
@@ -741,7 +884,7 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
             🔍 Mostrando resultados para: <strong>"{busqueda}"</strong>
           </span>
           <span className="resultados-count">
-            {filtrarPedidos(pedidos).length} pedido(s) encontrado(s)
+            {totalRegistros} pedido(s) encontrado(s)
           </span>
         </div>
       )}
@@ -780,6 +923,15 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
             return (
               <div key={pedido.id} className={`pedido-card ${pedido.estado} ${verificado ? 'verificado' : ''}`}>
                 <div className="pedido-header">
+                  <label className="pedido-check-wrap" title={pedido.estado !== 'pendiente' ? 'Solo se pueden seleccionar pedidos pendientes' : 'Seleccionar pedido'}>
+                    <input
+                      type="checkbox"
+                      checked={pedidosSeleccionados.includes(pedido.id)}
+                      onChange={() => toggleSeleccionPedido(pedido.id)}
+                      disabled={pedido.estado !== 'pendiente'}
+                    />
+                  </label>
+
                   <div className="info-principal">
                     <h3>📦 Pedido #{pedido.id}</h3>
                     <span className="fecha-pedido">
@@ -1159,6 +1311,18 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
               </div>
             );
           })
+        )}
+
+        {!cargando && hayMasPedidos && (
+          <div className="cargar-mas-container">
+            <button
+              onClick={() => cargarPedidos({ append: true })}
+              className="btn-cargar-mas"
+              disabled={cargandoMas}
+            >
+              {cargandoMas ? 'Cargando más pedidos...' : 'Cargar más pedidos'}
+            </button>
+          </div>
         )}
       </div>
 

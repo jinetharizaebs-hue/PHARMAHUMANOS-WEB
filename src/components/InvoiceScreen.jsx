@@ -49,6 +49,7 @@ const InvoiceScreen = () => {
   const [cargando, setCargando] = useState(false);
   const [erroresStock, setErroresStock] = useState({});
   const [notaCliente, setNotaCliente] = useState('');
+  const [pedidoOrigenId, setPedidoOrigenId] = useState(null);
   
   // Estados para vista de productos agregados
   const [vistaProductosAgregados, setVistaProductosAgregados] = useState('grid'); // 'grid' o 'list'
@@ -59,6 +60,7 @@ const InvoiceScreen = () => {
   useEffect(() => {
     if (location.state?.pedidoData) {
       const { pedidoData } = location.state;
+      setPedidoOrigenId(pedidoData.pedido_id || null);
       setCliente(pedidoData.cliente || '');
       setTelefono(pedidoData.telefono || '');
       setDireccion(pedidoData.direccion || '');
@@ -550,6 +552,7 @@ const InvoiceScreen = () => {
     setProductos([]);
     setVendedorSeleccionado('');
     setNotaCliente('');
+    setPedidoOrigenId(null);
     setErroresStock({});
   };
 
@@ -600,6 +603,22 @@ const InvoiceScreen = () => {
 
       // Actualizar inventario después de guardar la factura (pasando el facturaId)
       await actualizarInventario(productos, numeroFactura);
+
+      // Si la factura viene de Gestión de Pedidos, marcar ese pedido como entregado
+      if (pedidoOrigenId) {
+        const { error: pedidoError } = await supabase
+          .from('pedidos')
+          .update({
+            estado: 'entregado',
+            fecha_actualizacion: new Date().toISOString()
+          })
+          .eq('id', pedidoOrigenId);
+
+        if (pedidoError) {
+          console.error('Error actualizando estado del pedido al facturar:', pedidoError);
+          alert(`⚠️ Factura guardada, pero no se pudo actualizar el estado del pedido #${pedidoOrigenId}.\n\nActualízalo manualmente en Gestión de Pedidos.`);
+        }
+      }
 
       // Mostrar diálogo de confirmación con opción de imprimir
       const usuarioQuiereImprimir = window.confirm(

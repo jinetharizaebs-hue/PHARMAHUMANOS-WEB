@@ -3,6 +3,37 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import './RutasCobro.css';
 
+const PAGE_SIZE = 1000;
+
+const toNumber = (value) => {
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const fetchAllRows = async (table, orderColumn = 'id', ascending = false) => {
+  let from = 0;
+  let allRows = [];
+
+  while (true) {
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .order(orderColumn, { ascending })
+      .range(from, to);
+
+    if (error) throw error;
+
+    const batch = data || [];
+    allRows = allRows.concat(batch);
+
+    if (batch.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+
+  return allRows;
+};
+
 const RutasCobro = () => {
   const navigate = useNavigate();
   const [clientesConDeuda, setClientesConDeuda] = useState([]);
@@ -55,27 +86,13 @@ const RutasCobro = () => {
     try {
       let facturasData = [];
       let abonosData = [];
-      
-      // Intentar cargar desde Supabase
-      const { data: facturas, error: facturasError } = await supabase
-        .from('facturas')
-        .select('*');
 
-      const { data: abonos, error: abonosError } = await supabase
-        .from('abonos')
-        .select('*');
-
-      if (!facturasError && facturas) {
-        facturasData = facturas;
-      } else {
-        // Fallback a localStorage
+      try {
+        facturasData = await fetchAllRows('facturas', 'id', false);
+        abonosData = await fetchAllRows('abonos', 'id', false);
+      } catch (supabaseError) {
+        console.error('Error cargando facturas/abonos desde Supabase:', supabaseError);
         facturasData = JSON.parse(localStorage.getItem('facturas') || '[]');
-      }
-
-      if (!abonosError && abonos) {
-        abonosData = abonos;
-      } else {
-        // Fallback a localStorage
         abonosData = JSON.parse(localStorage.getItem('abonos') || '[]');
       }
 
@@ -90,9 +107,10 @@ const RutasCobro = () => {
         if (diferenciaDias <= 60) return false;
         
         // Calcular saldo pendiente
-        const abonosFactura = abonosData.filter(abono => abono.factura_id === factura.id);
-        const totalAbonado = abonosFactura.reduce((sum, abono) => sum + (abono.monto || 0), 0);
-        const saldoPendiente = factura.total - totalAbonado;
+        const facturaId = Number(factura.id);
+        const abonosFactura = abonosData.filter(abono => Number(abono.factura_id) === facturaId);
+        const totalAbonado = abonosFactura.reduce((sum, abono) => sum + toNumber(abono.monto), 0);
+        const saldoPendiente = toNumber(factura.total) - totalAbonado;
         
         // Solo incluir facturas con saldo pendiente > 0
         return saldoPendiente > 0;
@@ -108,9 +126,10 @@ const RutasCobro = () => {
       
       facturasMas60DiasConSaldo.forEach(factura => {
         // Calcular saldo pendiente para esta factura
-        const abonosFactura = abonosData.filter(abono => abono.factura_id === factura.id);
-        const totalAbonado = abonosFactura.reduce((sum, abono) => sum + (abono.monto || 0), 0);
-        const saldoPendiente = factura.total - totalAbonado;
+        const facturaId = Number(factura.id);
+        const abonosFactura = abonosData.filter(abono => Number(abono.factura_id) === facturaId);
+        const totalAbonado = abonosFactura.reduce((sum, abono) => sum + toNumber(abono.monto), 0);
+        const saldoPendiente = toNumber(factura.total) - totalAbonado;
         
         if (!clientesConFacturasAntiguas[factura.cliente]) {
           clientesConFacturasAntiguas[factura.cliente] = {
@@ -350,19 +369,11 @@ const RutasCobro = () => {
 
   const cargarClientesConDeuda = async () => {
     try {
-      // Cargar facturas
-      const { data: facturas, error: facturasError } = await supabase
-        .from('facturas')
-        .select('*');
-      
-      if (facturasError) throw facturasError;
-      
-      // Cargar abonos
-      const { data: abonos, error: abonosError } = await supabase
-        .from('abonos')
-        .select('*');
-      
-      if (abonosError) throw abonosError;
+      // Cargar facturas y abonos completos (sin límite de 1000 filas)
+      const [facturas, abonos] = await Promise.all([
+        fetchAllRows('facturas', 'id', false),
+        fetchAllRows('abonos', 'id', false)
+      ]);
 
       // Cargar visitas desde Supabase
       const { data: visitas, error: visitasError } = await supabase
@@ -378,9 +389,10 @@ const RutasCobro = () => {
       const deudasPorCliente = {};
       
       facturas.forEach(factura => {
-        const abonosFactura = abonos.filter(abono => abono.factura_id === factura.id);
-        const totalAbonado = abonosFactura.reduce((sum, abono) => sum + (abono.monto || 0), 0);
-        const saldo = factura.total - totalAbonado;
+        const facturaId = Number(factura.id);
+        const abonosFactura = abonos.filter(abono => Number(abono.factura_id) === facturaId);
+        const totalAbonado = abonosFactura.reduce((sum, abono) => sum + toNumber(abono.monto), 0);
+        const saldo = toNumber(factura.total) - totalAbonado;
         
         if (saldo > 0) {
           if (!deudasPorCliente[factura.cliente]) {
@@ -414,7 +426,7 @@ const RutasCobro = () => {
             deudasPorCliente[factura.cliente].abonosPendientes.push({
               facturaId: factura.id,
               fecha: fechaAbono,
-              monto: abono.monto || 0
+              monto: toNumber(abono.monto)
             });
 
             if (fechaAbono) {
@@ -505,9 +517,10 @@ const RutasCobro = () => {
       const deudasPorCliente = {};
       
       facturasStorage.forEach(factura => {
-        const abonosFactura = abonosStorage.filter(abono => abono.factura_id === factura.id);
-        const totalAbonado = abonosFactura.reduce((sum, abono) => sum + (abono.monto || 0), 0);
-        const saldo = factura.total - totalAbonado;
+        const facturaId = Number(factura.id);
+        const abonosFactura = abonosStorage.filter(abono => Number(abono.factura_id) === facturaId);
+        const totalAbonado = abonosFactura.reduce((sum, abono) => sum + toNumber(abono.monto), 0);
+        const saldo = toNumber(factura.total) - totalAbonado;
         
         if (saldo > 0) {
           if (!deudasPorCliente[factura.cliente]) {
@@ -541,7 +554,7 @@ const RutasCobro = () => {
             deudasPorCliente[factura.cliente].abonosPendientes.push({
               facturaId: factura.id,
               fecha: fechaAbono,
-              monto: abono.monto || 0
+              monto: toNumber(abono.monto)
             });
 
             if (fechaAbono) {
@@ -900,6 +913,11 @@ const RutasCobro = () => {
   const irAFacturasDesdeDetalles = () => {
     cerrarDetallesDeuda();
     verFacturasCliente(clienteSeleccionado);
+  };
+
+  const irAFacturaDirecta = (facturaId) => {
+    cerrarDetallesDeuda();
+    navigate(`/factura/${facturaId}`);
   };
 
   const irARutaGenerada = () => {
@@ -2065,6 +2083,7 @@ const RutasCobro = () => {
                         <th>Total</th>
                         <th>Saldo Pendiente</th>
                         <th>Antigüedad</th>
+                        <th>Acción</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2084,6 +2103,14 @@ const RutasCobro = () => {
                                 {dias} días
                               </span>
                             </td>
+                            <td>
+                              <button
+                                className="button micro-button info-button"
+                                onClick={() => irAFacturaDirecta(factura.id)}
+                              >
+                                <i className="fas fa-external-link-alt"></i> Ver factura
+                              </button>
+                            </td>
                           </tr>
                         );
                       })}
@@ -2093,6 +2120,7 @@ const RutasCobro = () => {
                         <td colSpan="2">TOTAL</td>
                         <td>{formatMoneda(clienteSeleccionado.facturasPendientes.reduce((sum, f) => sum + f.total, 0))}</td>
                         <td className="total-saldo">{formatMoneda(clienteSeleccionado.totalDeuda)}</td>
+                        <td></td>
                         <td></td>
                       </tr>
                     </tfoot>
