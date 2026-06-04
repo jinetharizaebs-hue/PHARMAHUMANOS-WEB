@@ -784,6 +784,22 @@ const FacturasGuardadas = () => {
               >
                 <i className="fas fa-chart-bar"></i> Reportes de Cobros
               </button>
+
+              <button
+                className="button report-button"
+                onClick={() => navigate('/informe-ventas-diarias')}
+                disabled={importando || cargando}
+              >
+                <i className="fas fa-chart-line"></i> Informe Ventas Diarias
+              </button>
+
+              <button
+                className="button report-button"
+                onClick={() => navigate('/informe-cobros-diarios')}
+                disabled={importando || cargando}
+              >
+                <i className="fas fa-money-check-alt"></i> Informe Cobros Diarios
+              </button>
             </>
           )}
         </div>

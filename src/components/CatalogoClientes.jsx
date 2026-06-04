@@ -72,15 +72,18 @@ const CatalogoClientes = () => {
         setCategorias(['Todas', ...categoriasUnicas]);
         setProductos(productos || []);
 
-        // Cargar información del cliente desde URL si existe
-        if (location.search) {
-          const params = new URLSearchParams(location.search);
-          setClienteInfo(prev => ({
-            ...prev,
-            nombre: params.get('nombre') || '',
-            telefono: params.get('telefono') || ''
-          }));
-        }
+        // Cargar información del cliente desde navegación o URL si existe
+        const params = new URLSearchParams(location.search);
+        const clienteDesdeEstado = location.state?.clienteData || {};
+
+        setClienteInfo(prev => ({
+          ...prev,
+          nombre: clienteDesdeEstado.nombre || params.get('nombre') || '',
+          telefono: clienteDesdeEstado.telefono || params.get('telefono') || '',
+          direccion: clienteDesdeEstado.direccion || params.get('direccion') || '',
+          correo: clienteDesdeEstado.correo || params.get('correo') || '',
+          vendedor: clienteDesdeEstado.vendedor || prev.vendedor
+        }));
       } catch (error) {
         console.error("Error cargando productos:", error);
         setError('Error al cargar el catálogo. Intenta nuevamente.');
@@ -90,7 +93,7 @@ const CatalogoClientes = () => {
     };
     
     cargarProductos();
-  }, [location.search]);
+  }, [location.search, location.state]);
 
   // Handlers
   const handleInputChange = (e) => {

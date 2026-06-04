@@ -14,7 +14,6 @@ import NotFound from './components/NotFound';
 import Navigation from './components/Navigation';
 import GestionInventario from './components/GestionInventario';
 import DashboardVentas from './components/DashboardVentas';
-import MallMap from './components/MallMap';
 import RutasCobro from './components/RutasCobro';
 import GastosScreen from './components/GastosScreen';
 import GastosEmpresa from './components/GastosEmpresa';
@@ -24,6 +23,8 @@ import ContabilidadScreen from './components/ContabilidadScreen';
 import HistorialMovimientos from './components/HistorialMovimientos';
 import AuditoriaProductos from './components/AuditoriaProductos';
 import ReporteClientesPorProducto from './components/ReporteClientesPorProducto';
+import InformeVentasDiarias from './components/InformeVentasDiarias';
+import InformeCobrosDiarios from './components/InformeCobrosDiarios';
 
 // Contexto de autenticación
 const AuthContext = createContext();
@@ -107,10 +108,33 @@ const PageMeta = ({ title, description }) => {
 // Wrapper components para manejar navegación
 const ClientesScreenWrapper = () => {
   const navigate = useNavigate();
+
+  const manejarHacerPedido = (cliente) => {
+    const params = new URLSearchParams({
+      nombre: cliente?.nombre || '',
+      telefono: cliente?.telefono || '',
+      direccion: cliente?.direccion || '',
+      correo: cliente?.correo || ''
+    });
+
+    navigate(`/catalogo-clientes?${params.toString()}`, {
+      state: {
+        clienteData: {
+          nombre: cliente?.nombre || '',
+          telefono: cliente?.telefono || '',
+          direccion: cliente?.direccion || '',
+          correo: cliente?.correo || '',
+          clasificacion: cliente?.clasificacion || 3,
+          id: cliente?.id || null
+        }
+      }
+    });
+  };
   
   return (
     <ClientesScreen 
       onVolver={() => navigate('/facturacion')} // O la ruta que prefieras
+      onHacerPedido={manejarHacerPedido}
       onSeleccionarCliente={(cliente) => {
         // Lógica para cuando se selecciona un cliente
         console.log('Cliente seleccionado:', cliente);
@@ -282,16 +306,6 @@ function App() {
               </ProtectedRoute>
             } />
             
-            {/* Ruta para el Mapa de Locales */}
-            <Route path="/mapa-locales" element={
-              <ProtectedRoute requiredRoles={['superadmin', 'admin']}>
-                <>
-                  <PageMeta title="Mapa de Locales - e-business store(EBS)" description="Mapa interactivo de locales y ubicaciones" />
-                  <MallMap />
-                </>
-              </ProtectedRoute>
-            } />
-            
             <Route path="/factura/:id" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'inventario', 'contabilidad', 'vendedor']}>
                 <>
@@ -306,6 +320,24 @@ function App() {
                 <>
                   <PageMeta title="Reportes de Cobros - e-business store(EBS)" description="Reportes y análisis de cobros" />
                   <ReportesCobros />
+                </>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/informe-ventas-diarias" element={
+              <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad', 'vendedor']}>
+                <>
+                  <PageMeta title="Informe de Ventas Diarias - e-business store(EBS)" description="Resumen diario, mensual y por vendedor de ventas" />
+                  <InformeVentasDiarias />
+                </>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/informe-cobros-diarios" element={
+              <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad', 'vendedor']}>
+                <>
+                  <PageMeta title="Informe de Cobros Diarios - e-business store(EBS)" description="Resumen diario, mensual y por vendedor de cobros" />
+                  <InformeCobrosDiarios />
                 </>
               </ProtectedRoute>
             } />

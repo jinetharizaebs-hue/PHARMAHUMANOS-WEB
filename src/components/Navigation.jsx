@@ -101,7 +101,6 @@ const Navigation = () => {
             { path: '/facturas', label: 'Facturas Guardadas', icon: '📄' },
             { path: '/catalogo-clientes', label: 'Enviar Catálogo', icon: '📤' },
             { path: '/clientes', label: 'Gestión Clientes', icon: '👤' },
-            { path: '/mapa-locales', label: 'Mapa de Locales', icon: '🗺️' },
             { path: '/rutas-cobro', label: 'Rutas de Cobro', icon: '🚗' }
           ]
         },
@@ -115,6 +114,8 @@ const Navigation = () => {
             { path: '/auditoria-productos', label: 'Auditoría de Productos', icon: '📋' },
             { path: '/movimientos', label: 'Historial Movimientos', icon: '📊' },
             { path: '/dashboard-ventas', label: 'Dashboard Ventas', icon: '📈' },
+            { path: '/informe-ventas-diarias', label: 'Informe Ventas Diarias', icon: '🧾' },
+            { path: '/informe-cobros-diarios', label: 'Informe Cobros Diarios', icon: '💵' },
             { path: '/reporte-clientes-producto', label: 'Clientes por Producto', icon: '👥' },
             { path: '/reportes-cobros', label: 'Reportes de Cobros', icon: '💰' }
           ]
@@ -161,7 +162,6 @@ const Navigation = () => {
             { path: '/facturas', label: 'Facturas Guardadas', icon: '📄' },
             { path: '/catalogo-clientes', label: 'Enviar Catálogo', icon: '📤' },
             { path: '/clientes', label: 'Gestión Clientes', icon: '👤' },
-            { path: '/mapa-locales', label: 'Mapa de Locales', icon: '🗺️' },
             { path: '/rutas-cobro', label: 'Rutas de Cobro', icon: '🚗' }
           ]
         },
@@ -175,6 +175,8 @@ const Navigation = () => {
             { path: '/auditoria-productos', label: 'Auditoría de Productos', icon: '📋' },
             { path: '/movimientos', label: 'Historial Movimientos', icon: '📊' },
             { path: '/dashboard-ventas', label: 'Dashboard Ventas', icon: '📈' },
+            { path: '/informe-ventas-diarias', label: 'Informe Ventas Diarias', icon: '🧾' },
+            { path: '/informe-cobros-diarios', label: 'Informe Cobros Diarios', icon: '💵' },
             { path: '/rutas-cobro', label: 'Rutas de Cobro', icon: '🚗' }
           ]
         },
@@ -214,6 +216,8 @@ const Navigation = () => {
         { path: '/facturas', label: 'Facturas Guardadas', icon: '📄', tipo: 'simple' },
         { path: '/catalogo-clientes', label: 'Enviar Catálogo', icon: '📤', tipo: 'simple' },
         { path: '/reportes-cobros', label: 'Reportes de Cobros', icon: '📈', tipo: 'simple' },
+        { path: '/informe-ventas-diarias', label: 'Informe Ventas Diarias', icon: '🧾', tipo: 'simple' },
+        { path: '/informe-cobros-diarios', label: 'Informe Cobros Diarios', icon: '💵', tipo: 'simple' },
         { path: '/gastos', label: 'Gestión de Gastos', icon: '💰', tipo: 'simple' },
         { path: '/gastos-empresa', label: 'Gastos de la Empresa', icon: '💸', tipo: 'simple' },
         { path: '/contabilidad-gastos', label: 'Gastos Fácil', icon: '🧾', tipo: 'simple' },

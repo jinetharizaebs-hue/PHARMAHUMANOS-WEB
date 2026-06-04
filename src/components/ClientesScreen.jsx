@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './ClientesScreen.css';
 import { supabase } from './supabaseClient.js';
 
 const ClientesScreen = ({ 
   onSeleccionarCliente, 
   onVolver,
+  onHacerPedido,
   clientes: initialClientes 
 }) => {
+  const navigate = useNavigate();
   // Estados para clientes
   const [busquedaCliente, setBusquedaCliente] = useState('');
   const [nuevoCliente, setNuevoCliente] = useState({
@@ -233,6 +236,32 @@ const ClientesScreen = ({
 
   const seleccionarCliente = (cliente) => {
     onSeleccionarCliente(cliente);
+  };
+
+  const hacerPedidoCliente = (cliente) => {
+    if (onHacerPedido) {
+      onHacerPedido(cliente);
+      return;
+    }
+
+    const params = new URLSearchParams({
+      nombre: cliente.nombre || '',
+      telefono: cliente.telefono || '',
+      direccion: cliente.direccion || '',
+      correo: cliente.correo || ''
+    });
+
+    navigate(`/catalogo-clientes?${params.toString()}`, {
+      state: {
+        clienteData: {
+          nombre: cliente.nombre || '',
+          telefono: cliente.telefono || '',
+          direccion: cliente.direccion || '',
+          correo: cliente.correo || '',
+          clasificacion: cliente.clasificacion || 3
+        }
+      }
+    });
   };
 
   // Función para manejar el volver
@@ -511,6 +540,15 @@ const ClientesScreen = ({
                         {cliente.direccion && <p>📍 Dir: {cliente.direccion}</p>}
                       </div>
                       <div className="cliente-acciones">
+                        <button
+                          className="button success-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            hacerPedidoCliente(cliente);
+                          }}
+                        >
+                          🛒 Hacer Pedido
+                        </button>
                         <button
                           className="button info-button"
                           onClick={(e) => {
