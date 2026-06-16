@@ -814,7 +814,7 @@ const CuentasPorPagar = () => {
 
     const fechaGeneracion = new Date().toLocaleString('es-CO');
 
-    // Preparar datos para Excel
+    // Preparar datos para Excel (agregar nombre del proveedor)
     const datos = facturasFiltradas.map((factura) => {
       const demora = factura.diasVencimiento !== null && factura.diasVencimiento !== undefined
         ? -factura.diasVencimiento
@@ -827,6 +827,7 @@ const CuentasPorPagar = () => {
       return {
         'REF DOC': factura.numeroFactura,
         'CLASE': factura.clase,
+        'PROVEEDOR': obtenerProveedor(factura.proveedorId)?.nombre || '',
         'FH BASE': formatDate(factura.fechaEmision),
         'FH PAGO': formatDate(factura.fechaVencimiento),
         'DEMORA': demora === '' ? '' : demora,
@@ -841,10 +842,11 @@ const CuentasPorPagar = () => {
       return sum + (parseFloat(factura.saldo) || 0);
     }, 0);
 
-    // Agregar fila de totales
+    // Agregar fila de totales (mantener columna PROVEEDOR)
     datos.push({
       'REF DOC': 'TOTAL',
       'CLASE': '',
+      'PROVEEDOR': '',
       'FH BASE': '',
       'FH PAGO': '',
       'DEMORA': '',
@@ -856,13 +858,14 @@ const CuentasPorPagar = () => {
 
     // Crear workbook
     const ws = XLSX.utils.json_to_sheet(datos, {
-      header: ['REF DOC', 'CLASE', 'FH BASE', 'FH PAGO', 'DEMORA', 'IMPORTE', 'BASE PP', 'DESCUENTO', 'A PAGAR']
+      header: ['REF DOC', 'CLASE', 'PROVEEDOR', 'FH BASE', 'FH PAGO', 'DEMORA', 'IMPORTE', 'BASE PP', 'DESCUENTO', 'A PAGAR']
     });
 
     // Ajustar ancho de columnas
     ws['!cols'] = [
       { wch: 15 }, // REF DOC
       { wch: 10 }, // CLASE
+      { wch: 30 }, // PROVEEDOR
       { wch: 12 }, // FH BASE
       { wch: 12 }, // FH PAGO
       { wch: 10 }, // DEMORA
