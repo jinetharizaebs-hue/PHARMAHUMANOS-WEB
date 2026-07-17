@@ -28,29 +28,29 @@ const Login = () => {
     },
     {
       id: 103,
-      username: 'mja',
-      password: 'mjaqwe',
+      username: 'jineth',
+      password: 'hteij123',
       role: 'admin',
       descripcion: 'Admin - Acceso total para supervision y gestion.'
     },
     {
       id: 104,
-      username: 'andre',
-      password: 'andreqwe',
+      username: 'contabi',
+      password: 'contabi123',
       role: 'contabilidad',
       descripcion: 'Contabilidad - Reportes, control financiero y cuentas por pagar.'
     },
     {
       id: 1,
-      username: 'John Diaz',
-      password: 'john123',
+      username: 'vendedort1',
+      password: 'ven123',
       role: 'vendedor',
       descripcion: 'Vendedor - Gestion comercial y seguimiento de pedidos.'
     },
     {
       id: 2,
-      username: 'Alan Diaz',
-      password: 'Alan2026',
+      username: 'vendedor2',
+      password: 'ven1234',
       role: 'vendedor',
       descripcion: 'Vendedor - Gestion comercial y seguimiento de pedidos.'
     },
@@ -70,8 +70,8 @@ const Login = () => {
     },
     {
       id: 5,
-      username: 'Andrea Gutierrez',
-      password: 'andrea123',
+      username: 'contabilidad',
+      password: 'contabilidad123',
       role: 'contabilidad',
       descripcion: 'Contabilidad - Reportes y control financiero.'
     }
