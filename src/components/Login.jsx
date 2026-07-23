@@ -42,8 +42,8 @@ const Login = () => {
     },
     {
       id: 105,
-      username: 'wendy',
-      password: 'wen123',
+      username: 'Wendy',
+      password: 'wen1234',
       role: 'admin',
       descripcion: 'Admin - Acceso total al sistema.'
     },
