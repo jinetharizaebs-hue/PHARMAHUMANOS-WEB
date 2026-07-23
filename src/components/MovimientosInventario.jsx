@@ -122,23 +122,31 @@ export default function MovimientosInventario() {
         .from('movimientos_inventario')
         .insert([{
           producto_id: movimiento.producto_id,
-          tipo_movimiento: movimiento.tipo_movimiento,
+          tipo: movimiento.tipo_movimiento,
           cantidad: cantidadMovida,
-          stock_anterior: stockAnterior,
-          stock_nuevo: stockNuevo,
-          descripcion: `${movimiento.motivo}${movimiento.observaciones ? ' - ' + movimiento.observaciones : ''}`,
-          usuario: nombreUsuario,
-          rol_usuario: user?.role || 'N/A',
-          precio_unitario: movimiento.precio_unitario ? parseFloat(movimiento.precio_unitario) : null,
           motivo: movimiento.motivo,
-          observaciones: movimiento.observaciones
+          referencia: movimiento.observaciones || null,
+          usuario: nombreUsuario,
+          rol_usuario: user?.role || 'N/A'
         }]);
 
       if (error) {
         console.error('Error de Supabase:', error);
         setError('Error al registrar movimiento: ' + error.message);
       } else {
-        alert('✅ Movimiento registrado exitosamente');
+        const { error: updateStockError } = await supabase
+          .from('productos')
+          .update({ stock: stockNuevo })
+          .eq('id', movimiento.producto_id);
+
+        if (updateStockError) {
+          console.error('Error actualizando stock:', updateStockError);
+          setError('Movimiento registrado, pero no se pudo actualizar el stock: ' + updateStockError.message);
+        } else {
+          alert('✅ Movimiento registrado exitosamente');
+          setError('');
+        }
+
         setMovimiento({
           producto_id: '',
           tipo_movimiento: 'entrada',

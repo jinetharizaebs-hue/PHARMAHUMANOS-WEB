@@ -153,7 +153,11 @@ const FacturaDetalle = () => {
           .order('fecha', { ascending: false });
         
         if (abonosError) throw abonosError;
-        setAbonos(abonosData || []);
+        setAbonos((abonosData || []).map(abono => ({
+          ...abono,
+          nota: abono.nota || abono.observaciones || '',
+          metodo: abono.metodo || abono.metodo_pago || 'Efectivo'
+        })));
         
       } catch (error) {
         console.error("Error cargando datos:", error);
@@ -508,7 +512,7 @@ const FacturaDetalle = () => {
                   <div class="empresa-logo-wrap">
                     <img class="empresa-logo" src="${logoFacturaUrl}" alt="Logo Maranatha" onerror="this.style.display='none'" />
                   </div>
-                  <div class="empresa-nombre"><strong>DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A</strong></div>
+                  <div class="empresa-nombre"><strong>PHARMAHUMANOS</strong></div>
                   <div class="empresa-detalle">NIT. 80741957-3</div>
                   <div class="empresa-detalle">Bogotá Cel. 301 601 7182</div>
                   <div class="empresa-detalle">Soacha Cel. 319 209 1629</div>
@@ -592,7 +596,7 @@ const FacturaDetalle = () => {
                 <div class="footer-payment">NEQUI Y DAVIPLATA: <span class="llave-nequi">3016017182</span></div>
                 <div class="footer-payment">BREVE: <span class="llave-nequi">80741957</span></div>
                 <div class="footer-payment">BANCOLOMBIA AHORROS: <span class="llave-nequi">09414650365</span></div>
-                <div class="logo">DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A</div>
+                <div class="logo">PHARMAHUMANOS</div>
               </div>
             </div>
             
@@ -602,12 +606,12 @@ const FacturaDetalle = () => {
               <div class="encabezado">
                 <div class="empresa-info">
                   <div class="empresa-logo-wrap">
-                    <img class="empresa-logo" src="${logoFacturaUrl}" alt="Logo Maranatha" onerror="this.style.display='none'" />
+                    <img class="empresa-logo" src="${logoFacturaUrl}" alt="Logo PHARMAHUMANOS" onerror="this.style.display='none'" />
                   </div>
-                  <div class="empresa-nombre"><strong>DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A</strong></div>
-                  <div class="empresa-detalle">NIT. 80741957-3</div>
-                  <div class="empresa-detalle">Bogotá Cel. 301 601 7182</div>
-                  <div class="empresa-detalle">Soacha Cel. 319 209 1629</div>
+                  <div class="empresa-nombre"><strong>PHARMAHUMANOS</strong></div>
+                  <div class="empresa-detalle">NIT. -</div>
+                  <div class="empresa-detalle">Bogotá Cel. 301 1232 601 </div>
+                  <div class="empresa-detalle">Soacha Cel. 319 209 1234</div>
                 </div>
                 <div class="fecha-wrapper">
                   <div class="fecha">${formatearFecha(factura.fecha)}</div>
@@ -685,10 +689,10 @@ const FacturaDetalle = () => {
               
               <div class="footer">
                 <div>Gracias por su preferencia.</div>
-                <div class="footer-payment">NEQUI Y DAVIPLATA: <span class="llave-nequi">3016017182</span></div>
-                <div class="footer-payment">BREVE: <span class="llave-nequi">80741957</span></div>
-                <div class="footer-payment">BANCOLOMBIA AHORROS: <span class="llave-nequi">09414650365</span></div>
-                <div class="logo">DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A</div>
+                <div class="footer-payment">NEQUI Y DAVIPLATA: <span class="llave-nequi">xxxxxxx</span></div>
+                <div class="footer-payment">BREVE: <span class="llave-nequi">xxxxxxxxx</span></div>
+                <div class="footer-payment">BANCOLOMBIA AHORROS: <span class="llave-nequi">xxxxxxxxx</span></div>
+                <div class="logo">PHARMAHUMANOS</div>
               </div>
             </div>
           </div>
@@ -749,12 +753,15 @@ const FacturaDetalle = () => {
     try {
       setCargando(true);
       
+      const observaciones = [nuevoAbono.metodo, nuevoAbono.nota]
+        .filter(text => text && text.toString().trim() !== '')
+        .join(' | ');
+
       const abonoData = {
         factura_id: Number(id),
         monto: nuevoAbono.monto,
         fecha: nuevoAbono.fecha || getLocalDateForInput(),
-        metodo: nuevoAbono.metodo,
-        nota: nuevoAbono.nota || null
+        observaciones: observaciones || null
       };
 
       const { data, error } = await supabase
@@ -764,8 +771,14 @@ const FacturaDetalle = () => {
       
       if (error) throw error;
 
+      const abonoCreado = {
+        ...data[0],
+        nota: nuevoAbono.nota || data[0].observaciones || '',
+        metodo: nuevoAbono.metodo
+      };
+
       // Actualizar estado local primero
-      const nuevosAbonos = [data[0], ...abonos];
+      const nuevosAbonos = [abonoCreado, ...abonos];
       setAbonos(nuevosAbonos);
       
       // 🔔 Enviar notificación por WhatsApp con el cálculo correcto
@@ -778,11 +791,11 @@ const FacturaDetalle = () => {
       mensaje += `Factura: #${factura.id}\n`;
       mensaje += `Cliente: ${factura.cliente}\n`;
       mensaje += `Total Factura: ${formatearMoneda(factura.total)}\n\n`;
-      mensaje += `Abono Agregado: ${formatearMoneda(data[0].monto)}\n`;
-      mensaje += `Fecha Abono: ${formatearFecha(data[0].fecha)}\n`;
-      mensaje += `Método: ${data[0].metodo}\n`;
-      if (data[0].nota) {
-        mensaje += `Nota: ${data[0].nota}\n`;
+      mensaje += `Abono Agregado: ${formatearMoneda(abonoCreado.monto)}\n`;
+      mensaje += `Fecha Abono: ${formatearFecha(abonoCreado.fecha)}\n`;
+      mensaje += `Método: ${abonoCreado.metodo}\n`;
+      if (abonoCreado.nota) {
+        mensaje += `Nota: ${abonoCreado.nota}\n`;
       }
       mensaje += `\nTotal Abonado: ${formatearMoneda(totalAbonado)}\n`;
       mensaje += `Saldo Pendiente: ${formatearMoneda(saldoPendiente)}\n\n`;
@@ -833,11 +846,14 @@ const FacturaDetalle = () => {
     try {
       setCargando(true);
       
+      const observaciones = [nuevoAbono.metodo, nuevoAbono.nota]
+        .filter(text => text && text.toString().trim() !== '')
+        .join(' | ');
+
       const abonoData = {
         monto: nuevoAbono.monto,
         fecha: nuevoAbono.fecha,
-        metodo: nuevoAbono.metodo,
-        nota: nuevoAbono.nota || null
+        observaciones: observaciones || null
       };
 
       const { data, error } = await supabase
@@ -848,9 +864,15 @@ const FacturaDetalle = () => {
       
       if (error) throw error;
 
+      const abonoActualizado = {
+        ...data[0],
+        nota: nuevoAbono.nota || data[0].observaciones || '',
+        metodo: nuevoAbono.metodo
+      };
+
       // Actualizar estado local
       setAbonos(abonos.map(abono => 
-        abono.id === editandoAbono.id ? data[0] : abono
+        abono.id === editandoAbono.id ? abonoActualizado : abono
       ));
       
       // Resetear formulario

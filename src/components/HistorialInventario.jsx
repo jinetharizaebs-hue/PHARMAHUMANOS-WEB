@@ -5,6 +5,7 @@ import './HistorialInventario.css';
 export default function HistorialInventario() {
   const [movimientos, setMovimientos] = useState([]);
   const [movimientosFiltrados, setMovimientosFiltrados] = useState([]);
+  const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState('todos');
   
@@ -19,6 +20,10 @@ export default function HistorialInventario() {
   });
 
   useEffect(() => {
+    cargarProductos();
+  }, []);
+
+  useEffect(() => {
     cargarMovimientos();
   }, [filtroTipo]);
 
@@ -26,24 +31,39 @@ export default function HistorialInventario() {
     filtrarMovimientos();
   }, [movimientos, busqueda]);
 
+  const cargarProductos = async () => {
+    const { data, error } = await supabase
+      .from('productos')
+      .select('id, nombre');
+
+    if (!error) {
+      setProductos(data || []);
+    }
+  };
+
   const cargarMovimientos = async () => {
     setLoading(true);
     let query = supabase
-      .from('historial_inventario')
+      .from('movimientos_inventario')
       .select('*')
-      .order('fecha_movimiento', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (filtroTipo !== 'todos') {
-      query = query.eq('tipo_movimiento', filtroTipo);
+      query = query.eq('tipo', filtroTipo);
     }
 
     const { data, error } = await query;
 
     if (!error) {
-      setMovimientos(data);
-      setMovimientosFiltrados(data);
+      setMovimientos(data || []);
+      setMovimientosFiltrados(data || []);
     }
     setLoading(false);
+  };
+
+  const obtenerNombreProducto = (productoId) => {
+    const producto = productos.find(p => p.id === productoId);
+    return producto ? producto.nombre : `ID ${productoId}`;
   };
 
   const filtrarMovimientos = () => {
@@ -52,7 +72,7 @@ export default function HistorialInventario() {
     // Filtrar por producto
     if (busqueda.producto) {
       resultados = resultados.filter(mov => 
-        mov.producto.toLowerCase().includes(busqueda.producto.toLowerCase())
+        obtenerNombreProducto(mov.producto_id).toLowerCase().includes(busqueda.producto.toLowerCase())
       );
     }
 
@@ -60,7 +80,7 @@ export default function HistorialInventario() {
     if (busqueda.fechaInicio) {
       const fechaInicio = new Date(busqueda.fechaInicio);
       resultados = resultados.filter(mov => 
-        new Date(mov.fecha_movimiento) >= fechaInicio
+        new Date(mov.created_at) >= fechaInicio
       );
     }
 
@@ -68,7 +88,7 @@ export default function HistorialInventario() {
       const fechaFin = new Date(busqueda.fechaFin);
       fechaFin.setHours(23, 59, 59, 999); // Hasta el final del día
       resultados = resultados.filter(mov => 
-        new Date(mov.fecha_movimiento) <= fechaFin
+        new Date(mov.created_at) <= fechaFin
       );
     }
 
@@ -116,16 +136,16 @@ export default function HistorialInventario() {
   };
 
   const exportarCSV = () => {
-    const headers = ['Producto', 'Tipo', 'Cantidad', 'Motivo', 'Observaciones', 'Fecha'];
-    const csvContent = [
-      headers.join(','),
-      ...movimientosFiltrados.map(mov => [
-        `"${mov.producto}"`,
-        mov.tipo_movimiento,
-        mov.cantidad,
-        mov.motivo,
-        `"${mov.observaciones || ''}"`,
-        new Date(mov.fecha_movimiento).toLocaleDateString()
+const headers = ['Producto', 'Tipo', 'Cantidad', 'Motivo', 'Referencia', 'Fecha'];
+      const csvContent = [
+        headers.join(','),
+        ...movimientosFiltrados.map(mov => [
+          `"${obtenerNombreProducto(mov.producto_id)}"`,
+          mov.tipo,
+          mov.cantidad,
+          mov.motivo,
+          `"${mov.referencia || ''}"`,
+          new Date(mov.created_at).toLocaleDateString()
       ].join(','))
     ].join('\n');
 
@@ -284,19 +304,19 @@ export default function HistorialInventario() {
             <tbody>
               {movimientosFiltrados.map((mov) => (
                 <tr key={mov.id} className="table-row">
-                  <td className="table-cell">{mov.producto}</td>
+                  <td className="table-cell">{obtenerNombreProducto(mov.producto_id)}</td>
                   <td className="table-cell">
-                    <span className={`badge ${mov.tipo_movimiento === 'entrada' ? 'badge-entrada' : 'badge-salida'}`}>
-                      {mov.tipo_movimiento}
+                    <span className={`badge ${mov.tipo === 'entrada' ? 'badge-entrada' : 'badge-salida'}`}>
+                      {mov.tipo}
                     </span>
                   </td>
                   <td className="table-cell">{mov.cantidad}</td>
                   <td className="table-cell">{mov.motivo}</td>
                   <td className="table-cell observaciones-cell">
-                    {mov.observaciones || '-'}
+                    {mov.referencia || '-'}
                   </td>
                   <td className="table-cell">
-                    {new Date(mov.fecha_movimiento).toLocaleDateString()}
+                    {new Date(mov.created_at).toLocaleDateString()}
                   </td>
                 </tr>
               ))}

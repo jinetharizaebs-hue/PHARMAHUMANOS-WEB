@@ -41,6 +41,20 @@ const Login = () => {
       descripcion: 'Contabilidad - Reportes, control financiero y cuentas por pagar.'
     },
     {
+      id: 105,
+      username: 'wendy',
+      password: 'wen123',
+      role: 'admin',
+      descripcion: 'Admin - Acceso total al sistema.'
+    },
+    {
+      id: 106,
+      username: 'jineth',
+      password: 'hteij123',
+      role: 'admin',
+      descripcion: 'Admin - Acceso total para supervision y gestion.'
+    },
+    {
       id: 1,
       username: 'vendedort1',
       password: 'ven123',
@@ -63,8 +77,8 @@ const Login = () => {
     },
     {
       id: 4,
-      username: 'Administrador',
-      password: 'admin123',
+      username: 'wendy',
+      password: 'wen123',
       role: 'admin',
       descripcion: 'Admin - Acceso total al sistema.'
     },

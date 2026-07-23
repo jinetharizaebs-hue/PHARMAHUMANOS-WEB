@@ -16,7 +16,7 @@ const CatalogoClientes = () => {
     notas: '',
     vendedor: ''
   });
-  const vendedores = ['John Diaz', 'Alan Diaz'];
+  const vendedores = ['Vendedor 1', 'Vendedor 2'];
   const normalizarVendedor = (nombre = '') =>
     nombre
       .normalize('NFD')
@@ -24,8 +24,8 @@ const CatalogoClientes = () => {
       .toLowerCase()
       .trim();
   const telefonosPorVendedor = {
-    'john diaz': '573016017182',
-    'alan diaz': '573192091629'
+    'vendedor 1': '573016017182',
+    'vendedor 2': '573192091629'
   };
   const [mostrarCarrito, setMostrarCarrito] = useState(false);
   const [showQuantityNotification, setShowQuantityNotification] = useState(false);

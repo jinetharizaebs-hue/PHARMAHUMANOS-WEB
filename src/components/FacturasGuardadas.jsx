@@ -107,7 +107,8 @@ const FacturasGuardadas = () => {
 
   // Función para verificar la contraseña
   const verificarPassword = () => {
-    return password === 'Maranatha0425';
+    const contraseñasPermitidas = ['Pharma2026f', 'Maranatha0425'];
+    return contraseñasPermitidas.includes(password);
   };
 
   // Procesar facturas con filtros, orden y saldos

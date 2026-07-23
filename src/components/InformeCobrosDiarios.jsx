@@ -14,9 +14,20 @@ const toLocalDateKey = (date = new Date()) => {
 
 const parseLocalDate = (value) => {
   if (!value || typeof value !== 'string') return null;
-  const [year, month, day] = value.split('-').map(Number);
-  if (!year || !month || !day) return null;
-  return new Date(year, month - 1, day);
+
+  // Fecha simple YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  // Soporta ISO 8601 completo con hora y zona
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) {
+    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+  }
+
+  return null;
 };
 
 const formatMoney = (value = 0) => {

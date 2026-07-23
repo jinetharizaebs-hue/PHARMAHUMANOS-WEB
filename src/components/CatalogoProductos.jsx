@@ -456,7 +456,8 @@ const ModalConfirmacion = ({ isOpen, onClose, onConfirm, productoNombre }) => {
   const [password, setPassword] = useState('');
 
   const handleConfirm = () => {
-    if (password === 'edwin' || password === '777') {
+    const contraseñasPermitidas = ['Pharma2026p', 'edwin', '777'];
+    if (contraseñasPermitidas.includes(password)) {
       onConfirm();
       onClose();
     } else {

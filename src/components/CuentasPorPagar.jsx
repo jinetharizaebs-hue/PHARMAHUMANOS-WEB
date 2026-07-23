@@ -100,25 +100,23 @@ const CuentasPorPagar = () => {
 
   const cargarFacturas = async () => {
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('facturas_proveedores')
         .select('*')
-        .order('fecha_emision', { ascending: false });
+        .order('fecha', { ascending: false });
+
+      if (error) {
+        console.warn('No se pudo ordenar por fecha:', error.message);
+        data = [];
+      }
       
-      if (error) throw error;
-      
-      // Convertir nombres de columnas de snake_case a camelCase
-      const facturasFormateadas = data.map(f => {
-        let total = parseFloat(f.total);
-        let subtotal = parseFloat(f.subtotal);
-        let iva = parseFloat(f.iva);
-        let saldo = parseFloat(f.saldo);
+      // Normalizar datos de la BD actual
+      const facturasFormateadas = (data || []).map(f => {
+        let total = parseFloat(f.total) || 0;
+        let saldo = parseFloat(f.saldo) || 0;
         
-        // Asegurar que NC siempre sea negativo
         if (f.clase === 'NC') {
           total = -Math.abs(total);
-          subtotal = -Math.abs(subtotal);
-          iva = -Math.abs(iva);
           saldo = -Math.abs(saldo);
         }
         
@@ -126,18 +124,18 @@ const CuentasPorPagar = () => {
           id: f.id,
           proveedorId: f.proveedor_id,
           numeroFactura: f.numero_factura,
-          fechaEmision: f.fecha_emision,
-          fechaVencimiento: f.fecha_vencimiento,
-          clase: f.clase,
-          subtotal: subtotal,
-          iva: iva,
-          retencion: parseFloat(f.retencion),
+          fechaEmision: f.fecha || null,
+          fechaVencimiento: null,
+          clase: f.clase || 'FP',
+          subtotal: 0,
+          iva: 0,
+          retencion: 0,
           total: total,
-          pagado: parseFloat(f.pagado),
+          pagado: 0,
           saldo: saldo,
-          estado: f.estado,
-          descripcion: f.descripcion,
-          archivo: f.archivo_url,
+          estado: f.estado || 'pendiente',
+          descripcion: '',
+          archivo: null,
           fechaCreacion: f.created_at
         };
       });
@@ -158,24 +156,23 @@ const CuentasPorPagar = () => {
       
       if (error) throw error;
       
-      // Convertir nombres de columnas de snake_case a camelCase
-      const pagosFormateados = data.map(p => ({
+      const pagosFormateados = (data || []).map(p => ({
         id: p.id,
         facturaId: p.factura_id,
         fecha: p.fecha,
-        monto: parseFloat(p.monto),
-        metodoPago: p.metodo_pago,
-        referencia: p.referencia,
-        banco: p.banco,
-        nota: p.nota,
-        usuario: p.usuario,
+        monto: parseFloat(p.monto) || 0,
+        metodoPago: 'desconocido',
+        referencia: '',
+        banco: '',
+        nota: p.observaciones || '',
+        usuario: '',
         fechaCreacion: p.created_at
       }));
       
       setPagos(pagosFormateados);
     } catch (error) {
       console.error('Error al cargar pagos:', error);
-      alert('Error al cargar pagos');
+      setPagos([]);
     }
   };
 

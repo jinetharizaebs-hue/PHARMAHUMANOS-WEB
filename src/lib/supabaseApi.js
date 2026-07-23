@@ -229,19 +229,26 @@ export const supabaseApi = {
   // === ABONOS ===
   async crearAbono(abono) {
     try {
+      const observaciones = [abono.metodo_pago, abono.nota]
+        .filter(text => text && text.toString().trim() !== '')
+        .join(' | ');
+
       const { data, error } = await supabase
         .from('abonos')
         .insert([{
           factura_id: abono.factura_id,
           monto: parseFloat(abono.monto),
           fecha: abono.fecha,
-          nota: abono.nota || null,
-          metodo_pago: abono.metodo_pago || 'No especificado'
+          observaciones: observaciones || null
         }])
         .select()
       
       if (error) throw error
-      return data[0]
+      return {
+        ...data[0],
+        nota: abono.nota || data[0].observaciones || '',
+        metodo: abono.metodo_pago || 'Efectivo'
+      }
     } catch (error) {
       console.error('Error creando abono:', error)
       throw error
@@ -257,7 +264,11 @@ export const supabaseApi = {
         .order('fecha', { ascending: false })
       
       if (error) throw error
-      return data
+      return (data || []).map(abono => ({
+        ...abono,
+        nota: abono.nota || abono.observaciones || '',
+        metodo: abono.metodo || abono.metodo_pago || 'Efectivo'
+      }))
     } catch (error) {
       console.error('Error obteniendo abonos:', error)
       throw error

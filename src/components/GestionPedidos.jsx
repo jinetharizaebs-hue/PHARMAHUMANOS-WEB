@@ -430,7 +430,7 @@ ${pedido.direccion_entrega ? `• Dirección: ${pedido.direccion_entrega}` : ''}
 ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${pedido.cliente_notas}` : ''}
 
 ¡Gracias por tu compra! 🎉
-*DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A*`;
+*PHARMAHUMANOS*`;
 
     return encodeURIComponent(mensaje);
   };
@@ -767,7 +767,7 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
   return (
     <div className="gestion-pedidos">
       <header className="header-gestion">
-        <h1>🏪 Gestión de Pedidos - DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A</h1>
+        <h1>🏪 Gestión de Pedidos - PHARMAHUMANOS</h1>
         <p>Sistema de seguimiento y preparación de pedidos</p>
       </header>
 
@@ -1291,7 +1291,7 @@ ${pedido.cliente_notas && pedido.cliente_notas !== 'Ninguna' ? `• Notas: ${ped
                     
                     <a 
                       href={validarTelefonoColombia(pedido.cliente_telefono)
-                        ? `https://wa.me/${normalizarTelefonoWhatsApp(pedido.cliente_telefono)}?text=Hola ${encodeURIComponent(pedido.cliente_nombre)}, soy de DISTRIBUIDORA FARMACÉUTICA MARANATHA J.A. Tu pedido #${pedido.id} (${formatPrecio(pedido.total)}) está: ${getTextoEstado(pedido.estado)}`
+                        ? `https://wa.me/${normalizarTelefonoWhatsApp(pedido.cliente_telefono)}?text=Hola ${encodeURIComponent(pedido.cliente_nombre)}, soy de PHARMAHUMANOS. Tu pedido #${pedido.id} (${formatPrecio(pedido.total)}) está: ${getTextoEstado(pedido.estado)}`
                         : '#'
                       }
                       target="_blank"

@@ -60,7 +60,12 @@ CREATE POLICY "Allow anon delete vendedores" ON vendedores FOR DELETE USING (tru
 
 -- ====== TABLA: facturas ======
 ALTER TABLE IF EXISTS facturas
-  ADD COLUMN IF NOT EXISTS cliente TEXT;
+  ADD COLUMN IF NOT EXISTS cliente TEXT,
+  ADD COLUMN IF NOT EXISTS vendedor TEXT,
+  ADD COLUMN IF NOT EXISTS direccion TEXT,
+  ADD COLUMN IF NOT EXISTS telefono TEXT,
+  ADD COLUMN IF NOT EXISTS correo TEXT,
+  ADD COLUMN IF NOT EXISTS productos JSONB;
 
 ALTER TABLE IF EXISTS facturas ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow anon read facturas" ON facturas;

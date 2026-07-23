@@ -14,31 +14,19 @@ export default function GestionInventario() {
           <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
             <button
               onClick={() => setVistaActual('movimientos')}
-              className={`w-full sm:w-auto py-3 px-4 sm:px-6 rounded-t-md font-medium text-xs sm:text-sm transition-colors ${
-                vistaActual === 'movimientos'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-blue-500 text-white hover:bg-blue-600'
-              }`}
+              className={`nav-button primary ${vistaActual === 'movimientos' ? 'active' : ''}`}
             >
               📥 Registrar Movimiento
             </button>
             <button
               onClick={() => setVistaActual('historial')}
-              className={`w-full sm:w-auto py-3 px-4 sm:px-6 rounded-t-md font-medium text-xs sm:text-sm transition-colors ${
-                vistaActual === 'historial'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-blue-500 text-white hover:bg-blue-600'
-              }`}
+              className={`nav-button primary ${vistaActual === 'historial' ? 'active' : ''}`}
             >
               📊 Ver Historial
             </button>
             <button
               onClick={() => setVistaActual('mejores')}
-              className={`w-full sm:w-auto py-3 px-4 sm:px-6 rounded-t-md font-medium text-xs sm:text-sm transition-colors ${
-                vistaActual === 'mejores'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-blue-500 text-white hover:bg-blue-600'
-              }`}
+              className={`nav-button primary ${vistaActual === 'mejores' ? 'active' : ''}`}
             >
               🏆 Mejores Productos
             </button>
