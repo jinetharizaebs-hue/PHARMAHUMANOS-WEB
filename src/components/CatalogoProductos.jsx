@@ -5,6 +5,19 @@ import './CatalogoProductos.css';
 import { useAuth } from '../App';
 import { getProductSalesAndRecommendations, mergeRecommendationsIntoProducts } from '../lib/inventoryUtils';
 
+const categoriaIconos = {
+  'Populares': 'fa-shampoo',
+  'Genéricos': 'fa-capsules',
+  'Ortopédicos': 'fa-wheelchair',
+  'Hospitalarios': 'fa-hospital',
+  'Insumos médicos': 'fa-first-aid',
+  'Dispositivos médicos': 'fa-stethoscope'
+};
+
+const obtenerIconoCategoria = (categoria) => {
+  return categoriaIconos[categoria] || 'fa-tag';
+};
+
 // Componente para subir imágenes a Cloudinary
 const CloudinaryUpload = ({ onImageUpload }) => {
   const [uploading, setUploading] = useState(false);
@@ -295,7 +308,7 @@ const ImportExportActions = ({ productos, productosFiltrados, setProductos }) =>
 const ReporteInventario = ({ productos }) => {
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
   const [filtroEstado, setFiltroEstado] = useState('activos');
-  const categorias = ['Todas', 'Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas oftálmicas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud sexual e íntima', 'Primeros Auxilios', 'Cuidado Personal', 'Antigripal Cuidado Respiratorio', 'Laboratorio', 'Sistema Nervioso'];
+  const categorias = ['Todas', 'Populares', 'Genéricos', 'Ortopédicos', 'Hospitalarios', 'Insumos médicos', 'Dispositivos médicos'];
 
   // Filtrar productos según los filtros seleccionados
   const productosFiltrados = productos.filter(producto => {
@@ -527,7 +540,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
   const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
   const [mostrarAccionesMobile, setMostrarAccionesMobile] = useState(false);
 
-  const categorias = ['Dolor y Fiebre', 'Antibióticos', 'Cuidado Digestivo', 'Vitaminas y Suplementos', 'Cremas y Unguentos', 'Ampollas', 'Gotas oftálmicas', 'Cuidado Cardiovascular', 'Salud Urinaria', 'Salud sexual e íntima', 'Primeros Auxilios', 'Cuidado Personal', 'Antigripal Cuidado Respiratorio', 'Laboratorio', 'Sistema Nervioso'];
+  const categorias = ['Populares', 'Genéricos', 'Ortopédicos', 'Hospitalarios', 'Insumos médicos', 'Dispositivos médicos'];
 
 
   // Cargar productos desde Supabase
@@ -1214,7 +1227,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
                     
                     {producto.categoria && (
                       <div className="producto-categoria">
-                        <i className="fas fa-tag"></i> {producto.categoria}
+                        <i className={`fas ${obtenerIconoCategoria(producto.categoria)}`}></i> {producto.categoria}
                       </div>
                     )}
                     
