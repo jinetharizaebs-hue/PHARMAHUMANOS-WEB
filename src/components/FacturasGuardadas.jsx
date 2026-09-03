@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import * as XLSX from 'xlsx';
+import { isAuthorizedDeletePassword } from '../lib/deleteAuthorization';
 import './FacturasGuardadas.css';
 
 const parseLocalDate = (value) => {
@@ -107,8 +108,7 @@ const FacturasGuardadas = () => {
 
   // Función para verificar la contraseña
   const verificarPassword = () => {
-    const contraseñasPermitidas = ['Pharma2026f', 'Maranatha0425'];
-    return contraseñasPermitidas.includes(password);
+    return isAuthorizedDeletePassword(password);
   };
 
   // Procesar facturas con filtros, orden y saldos

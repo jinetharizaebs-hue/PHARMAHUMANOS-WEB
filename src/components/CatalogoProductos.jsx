@@ -4,6 +4,7 @@ import { supabase } from './supabaseClient';
 import './CatalogoProductos.css';
 import { useAuth } from '../App';
 import { getProductSalesAndRecommendations, mergeRecommendationsIntoProducts } from '../lib/inventoryUtils';
+import { isAuthorizedDeletePassword } from '../lib/deleteAuthorization';
 
 const categoriaIconos = {
   'Populares': 'fa-shampoo',
@@ -469,12 +470,11 @@ const ModalConfirmacion = ({ isOpen, onClose, onConfirm, productoNombre }) => {
   const [password, setPassword] = useState('');
 
   const handleConfirm = () => {
-    const contraseñasPermitidas = ['Pharma2026p', 'edwin', '777'];
-    if (contraseñasPermitidas.includes(password)) {
+    if (isAuthorizedDeletePassword(password)) {
       onConfirm();
       onClose();
     } else {
-      alert('Contraseña incorrecta comunicate con soporte 3004583117');
+      alert('Contraseña incorrecta. Comunícate con soporte 3004583117');
     }
   };
 
@@ -777,7 +777,11 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
       alert('Producto eliminado con éxito');
     } catch (error) {
       console.error('Error eliminando producto:', error);
-      alert('Error al eliminar el producto');
+      if (error?.code === '23503') {
+        alert('No se puede eliminar este producto porque tiene facturas, pedidos o movimientos de inventario relacionados. Puedes desactivarlo para conservar el historial.');
+        return;
+      }
+      alert(`Error al eliminar el producto: ${error?.message || 'verifica la conexión con la base de datos'}`);
     }
   };
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import { useAuth } from '../App';
+import { isAuthorizedDeletePassword } from '../lib/deleteAuthorization';
 import './FacturaDetalle.css';
 
 const getLocalDateForInput = () => {
@@ -838,7 +839,7 @@ const FacturaDetalle = () => {
 
     // Solicitar contraseña para editar
     const password = prompt('Ingrese la contraseña para editar el abono:');
-    if (password !== 'edwin' && password !== 'Maranatha0425') {
+    if (!isAuthorizedDeletePassword(password)) {
       alert('❌ Contraseña incorrecta. No se puede editar el abono.');
       return;
     }
@@ -898,7 +899,7 @@ const FacturaDetalle = () => {
 
     // Solicitar contraseña para eliminar
     const password = prompt('Ingrese la contraseña para eliminar el abono:');
-    if (password !== 'edwin' && password !== 'Maranatha0425') {
+    if (!isAuthorizedDeletePassword(password)) {
       alert('❌ Contraseña incorrecta. No se puede eliminar el abono.');
       return;
     }
