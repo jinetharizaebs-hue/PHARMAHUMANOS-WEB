@@ -67,14 +67,23 @@ const CatalogoClientes = () => {
 
         if (error) throw error;
 
-        // Extraer categorías únicas
         const categoriasUnicas = [...new Set(productos.map(p => p.categoria).filter(Boolean))].sort();
-        setCategorias(['Todas', ...categoriasUnicas]);
+        const categoriasDisponibles = ['Todas', ...categoriasUnicas];
+        setCategorias(categoriasDisponibles);
         setProductos(productos || []);
 
-        // Cargar información del cliente desde navegación o URL si existe
         const params = new URLSearchParams(location.search);
         const clienteDesdeEstado = location.state?.clienteData || {};
+        const categoriaDesdeUrl = decodeURIComponent(params.get('categoria') || '').trim();
+
+        if (categoriaDesdeUrl) {
+          const categoriaExiste = categoriasDisponibles.some(cat => cat === categoriaDesdeUrl);
+          if (categoriaExiste) {
+            setCategoriaFiltro(categoriaDesdeUrl);
+          } else {
+            setCategoriaFiltro('Todas');
+          }
+        }
 
         setClienteInfo(prev => ({
           ...prev,
