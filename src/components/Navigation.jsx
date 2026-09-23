@@ -72,6 +72,7 @@ const Navigation = () => {
           submenu: [
             { path: '/facturacion', label: 'Inicio', icon: '🏠' },
             { path: '/facturas', label: 'Facturas Guardadas', icon: '📄' },
+            { path: '/campana-catalogo', label: 'Campaña Catálogo', icon: '📣' },
             { path: '/rutas-cobro', label: 'Rutas de Cobro', icon: '🚗' }
           ]
         },
@@ -100,6 +101,7 @@ const Navigation = () => {
             { path: '/nueva-factura', label: 'Nueva Factura', icon: '➕' },
             { path: '/facturas', label: 'Facturas Guardadas', icon: '📄' },
             { path: '/catalogo-clientes', label: 'Enviar Catálogo', icon: '📤' },
+            { path: '/campana-catalogo', label: 'Campaña Catálogo', icon: '📣' },
             { path: '/clientes', label: 'Gestión Clientes', icon: '👤' },
             { path: '/rutas-cobro', label: 'Rutas de Cobro', icon: '🚗' }
           ]
@@ -161,6 +163,7 @@ const Navigation = () => {
             { path: '/nueva-factura', label: 'Nueva Factura', icon: '➕' },
             { path: '/facturas', label: 'Facturas Guardadas', icon: '📄' },
             { path: '/catalogo-clientes', label: 'Enviar Catálogo', icon: '📤' },
+            { path: '/campana-catalogo', label: 'Campaña Catálogo', icon: '📣' },
             { path: '/clientes', label: 'Gestión Clientes', icon: '👤' },
             { path: '/rutas-cobro', label: 'Rutas de Cobro', icon: '🚗' }
           ]
@@ -215,6 +218,7 @@ const Navigation = () => {
         { path: '/dashboard-contabilidad', label: 'Dashboard Contabilidad', icon: '📊', tipo: 'simple' },
         { path: '/facturas', label: 'Facturas Guardadas', icon: '📄', tipo: 'simple' },
         { path: '/catalogo-clientes', label: 'Enviar Catálogo', icon: '📤', tipo: 'simple' },
+        { path: '/campana-catalogo', label: 'Campaña Catálogo', icon: '📣', tipo: 'simple' },
         { path: '/reportes-cobros', label: 'Reportes de Cobros', icon: '📈', tipo: 'simple' },
         { path: '/informe-ventas-diarias', label: 'Informe Ventas Diarias', icon: '🧾', tipo: 'simple' },
         { path: '/informe-cobros-diarios', label: 'Informe Cobros Diarios', icon: '💵', tipo: 'simple' },
@@ -235,6 +239,7 @@ const Navigation = () => {
       return [
         { path: '/catalogo', label: 'Catálogo Productos', icon: '📚', tipo: 'simple' },
         { path: '/catalogo-clientes', label: 'Enviar Catálogo', icon: '📤', tipo: 'simple' },
+        { path: '/campana-catalogo', label: 'Campaña Catálogo', icon: '📣', tipo: 'simple' },
         { path: '/gestion-inventario', label: 'Gestión Inventario', icon: '📋', tipo: 'simple' },
         { path: '/movimientos', label: 'Historial Movimientos', icon: '📊', tipo: 'simple' },
         { path: '/gestion-pedidos', label: 'Gestión Pedidos', icon: '🛒', tipo: 'simple' },
@@ -328,7 +333,7 @@ const Navigation = () => {
             <div className="brand-logo">
               <img
                 src="/logo-maranatha.png"
-                alt="Logo Maranatha"
+                alt="Logo Distribuciones Pharmahumanos"
                 className="brand-logo-img"
               />
             </div>

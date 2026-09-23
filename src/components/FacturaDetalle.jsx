@@ -511,7 +511,7 @@ const FacturaDetalle = () => {
               <div class="encabezado">
                 <div class="empresa-info">
                   <div class="empresa-logo-wrap">
-                    <img class="empresa-logo" src="${logoFacturaUrl}" alt="Logo Maranatha" onerror="this.style.display='none'" />
+                    <img class="empresa-logo" src="${logoFacturaUrl}" alt="Logo Distribuciones Pharmahumanos" onerror="this.style.display='none'" />
                   </div>
                   <div class="empresa-nombre"><strong>PHARMAHUMANOS</strong></div>
                   <div class="empresa-detalle">NIT. 80741957-3</div>
@@ -1270,8 +1270,8 @@ const FacturaDetalle = () => {
           Gracias por su preferencia. Para cualquier aclaración, presentar esta cuenta de cobro.
         </p>
         <div className="footer-logo">
-          <span>e-business store(EBS)</span>
-          <small>E-business Store Marin</small>
+          <span>Distribuciones Pharmahumanos</span>
+          <small>Catálogo y gestión comercial</small>
         </div>
       </div>
     </div>

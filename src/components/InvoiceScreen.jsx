@@ -764,7 +764,7 @@ const InvoiceScreen = () => {
       {/* Formulario Principal */}
       {!mostrarVistaPrevia && !mostrarCatalogo && !mostrarClientes && (
         <>
-          <h1>PEDIDO e-business store(EBS)</h1>
+          <h1>PEDIDO DISTRIBUCIONES PHARMAHUMANOS</h1>
 
           {/* Botón de seleccionar cliente */}
           <div className="form-row">

@@ -309,7 +309,7 @@ const ImportExportActions = ({ productos, productosFiltrados, setProductos }) =>
 const ReporteInventario = ({ productos }) => {
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
   const [filtroEstado, setFiltroEstado] = useState('activos');
-  const categorias = ['Todas', 'Populares', 'Genéricos', 'Ortopédicos', 'Hospitalarios', 'Insumos médicos', 'Dispositivos médicos'];
+  const categorias = ['Todas', 'Populares', 'Genéricos', 'Medicamentos Éticos', 'Ortopédicos', 'Hospitalarios', 'Insumos médicos', 'Dispositivos médicos'];
 
   // Filtrar productos según los filtros seleccionados
   const productosFiltrados = productos.filter(producto => {
@@ -540,7 +540,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
   const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
   const [mostrarAccionesMobile, setMostrarAccionesMobile] = useState(false);
 
-  const categorias = ['Populares', 'Genéricos', 'Ortopédicos', 'Hospitalarios', 'Insumos médicos', 'Dispositivos médicos'];
+  const categorias = ['Populares', 'Genéricos', 'Medicamentos Éticos', 'Ortopédicos', 'Hospitalarios', 'Insumos médicos', 'Dispositivos médicos'];
 
 
   // Cargar productos desde Supabase

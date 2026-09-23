@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import './ClientesScreen.css';
 import { supabase } from './supabaseClient.js';
 
+const CATEGORIAS_POR_DEFECTO = ['Droguerías', 'Ortopédicos', 'Distribuidoras', 'Otros'];
+
 const ClientesScreen = ({ 
   onSeleccionarCliente, 
   onVolver,
@@ -17,9 +19,11 @@ const ClientesScreen = ({
     direccion: '',
     telefono: '',
     correo: '',
+    categoria: '',
     clasificacion: 3
   });
   const [clientes, setClientes] = useState(initialClientes || []);
+  const [categoriasDisponibles, setCategoriasDisponibles] = useState(CATEGORIAS_POR_DEFECTO);
   const [importandoClientes, setImportandoClientes] = useState(false);
   const [filtroClasificacion, setFiltroClasificacion] = useState(0);
   const [clienteEditando, setClienteEditando] = useState(null);
@@ -94,7 +98,15 @@ const ClientesScreen = ({
         throw supabaseError;
       }
       
-      setClientes(data || []);
+      const clientesCargados = data || [];
+      const categoriasExistentes = [...new Set(
+        clientesCargados
+          .map((cliente) => String(cliente.categoria || '').trim())
+          .filter(Boolean)
+      )];
+
+      setClientes(clientesCargados);
+      setCategoriasDisponibles([...new Set([...CATEGORIAS_POR_DEFECTO, ...categoriasExistentes])]);
     } catch (error) {
       console.error('Error completo al cargar clientes:', {
         message: error.message,
@@ -134,6 +146,7 @@ const ClientesScreen = ({
       direccion: cliente.direccion,
       telefono: cliente.telefono,
       correo: cliente.correo,
+      categoria: cliente.categoria || '',
       clasificacion: cliente.clasificacion
     });
   };
@@ -145,6 +158,7 @@ const ClientesScreen = ({
       direccion: '',
       telefono: '',
       correo: '',
+      categoria: '',
       clasificacion: 3
     });
     setError(null);
@@ -179,6 +193,7 @@ const ClientesScreen = ({
             direccion: nuevoCliente.direccion,
             telefono: telefonoLimpio,
             correo: nuevoCliente.correo,
+            categoria: nuevoCliente.categoria?.trim() || '',
             clasificacion: nuevoCliente.clasificacion,
             actualizado_en: new Date().toISOString()
           })
@@ -209,6 +224,7 @@ const ClientesScreen = ({
             direccion: nuevoCliente.direccion,
             telefono: telefonoLimpio,
             correo: nuevoCliente.correo,
+            categoria: nuevoCliente.categoria?.trim() || '',
             clasificacion: clasificacion
           }]);
         
@@ -223,6 +239,7 @@ const ClientesScreen = ({
         direccion: '',
         telefono: '',
         correo: '',
+        categoria: '',
         clasificacion: 3
       });
       setClienteEditando(null);
@@ -292,7 +309,7 @@ const ClientesScreen = ({
 
       const datosExportacion = {
         metadata: {
-          sistema: "e-business store(EBS) Facturación",
+          sistema: "Distribuciones Pharmahumanos Facturación",
           version: "1.0",
           fechaExportacion: new Date().toISOString(),
           totalClientes: data.length
@@ -304,6 +321,7 @@ const ClientesScreen = ({
           telefono: cliente.telefono || '',
           correo: cliente.correo || '',
           clasificacion: cliente.clasificacion || 3,
+          categoria: cliente.categoria || '',
           fecha_registro: cliente.fecha_registro || new Date().toISOString()
         }))
       };
@@ -374,6 +392,7 @@ const ClientesScreen = ({
             direccion: cliente.direccion ? cliente.direccion.toString().trim() : '',
             telefono: cliente.telefono ? cliente.telefono.toString().trim() : '',
             correo: cliente.correo ? cliente.correo.toString().trim() : '',
+            categoria: cliente.categoria ? cliente.categoria.toString().trim() : '',
             clasificacion: clasificacion
           };
         });
@@ -537,6 +556,7 @@ const ClientesScreen = ({
                         </div>
                         {cliente.telefono && <p>📞 Tel: {cliente.telefono}</p>}
                         {cliente.correo && <p>📧 Email: {cliente.correo}</p>}
+                        {cliente.categoria && <p>🏷️ Categoría: {cliente.categoria}</p>}
                         {cliente.direccion && <p>📍 Dir: {cliente.direccion}</p>}
                       </div>
                       <div className="cliente-acciones">
@@ -617,6 +637,22 @@ const ClientesScreen = ({
           </div>
 
           <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="cliente-categoria">Categoría del cliente</label>
+              <select
+                id="cliente-categoria"
+                value={nuevoCliente.categoria || ''}
+                onChange={(e) => setNuevoCliente({ ...nuevoCliente, categoria: e.target.value })}
+                aria-label="Categoría del cliente"
+              >
+                <option value="">Sin categoría</option>
+                {categoriasDisponibles.map((categoria) => (
+                  <option key={categoria} value={categoria}>
+                    {categoria}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="form-group">
               <label>Clasificación (1-5)</label>
               <div className="clasificacion-stars">

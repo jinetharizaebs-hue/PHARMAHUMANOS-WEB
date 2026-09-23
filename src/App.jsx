@@ -25,6 +25,7 @@ import AuditoriaProductos from './components/AuditoriaProductos';
 import ReporteClientesPorProducto from './components/ReporteClientesPorProducto';
 import InformeVentasDiarias from './components/InformeVentasDiarias';
 import InformeCobrosDiarios from './components/InformeCobrosDiarios';
+import CampanaCatalogo from './components/CampanaCatalogo';
 
 // Contexto de autenticación
 const AuthContext = createContext();
@@ -84,17 +85,17 @@ const ProtectedRoute = ({ children, requiredRoles = [] }) => {
 const PageMeta = ({ title, description }) => {
   return (
     <Helmet>
-      <title>{title || 'Catálogo e-business store(EBS)'}</title>
-      <meta name="description" content={description || 'Sistema de gestión y catálogo de productos e-business store(EBS)'} />
+      <title>{title || 'Distribuciones Pharmahumanos'}</title>
+      <meta name="description" content={description || 'Sistema de gestión y catálogo de productos de Distribuciones Pharmahumanos'} />
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
       <meta name="theme-color" content="#4CAF50" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-      <meta name="apple-mobile-web-app-title" content="e-business store(EBS)" />
+      <meta name="apple-mobile-web-app-title" content="Distribuciones Pharmahumanos" />
       
       {/* Open Graph tags para compartir */}
       <meta property="og:type" content="website" />
-      <meta property="og:title" content={title || 'Catálogo e-business store(EBS)'} />
+      <meta property="og:title" content={title || 'Distribuciones Pharmahumanos'} />
       <meta property="og:description" content={description || 'Sistema de gestión y catálogo de productos'} />
       
       {/* Prevenir indexación en desarrollo */}
@@ -214,8 +215,8 @@ function App() {
             <Route path="/" element={
               <>
                 <PageMeta 
-                  title="Catálogo Digital - e-business store(EBS)" 
-                  description="Catálogo digital de productos e-business store(EBS). Ing. Edwin Marín 3004583117"
+                  title="Catálogo Digital - Distribuciones Pharmahumanos"
+                  description="Catálogo digital de productos de Distribuciones Pharmahumanos. Ing. Edwin Marín 3004583117"
                 />
                 <CatalogoClientes />
               </>
@@ -225,8 +226,8 @@ function App() {
             <Route path="/catalogo-clientes" element={
               <>
                 <PageMeta 
-                  title="Catálogo Digital - e-business store(EBS)" 
-                  description="Catálogo digital de productos e-business store(EBS). Ing. Edwin Marín 3004583117"
+                  title="Catálogo Digital - Distribuciones Pharmahumanos"
+                  description="Catálogo digital de productos de Distribuciones Pharmahumanos. Ing. Edwin Marín 3004583117"
                 />
                 <CatalogoClientes />
               </>
@@ -235,7 +236,7 @@ function App() {
             {/* Login para equipo */}
             <Route path="/login" element={
               <>
-                <PageMeta title="Iniciar Sesión - e-business store(EBS)" description="Inicia sesión en el sistema e-business store(EBS)" />
+                <PageMeta title="Iniciar Sesión - Distribuciones Pharmahumanos" description="Inicia sesión en el sistema de Distribuciones Pharmahumanos" />
                 {user ? <Navigate to="/facturacion" replace /> : <Login />}
               </>
             } />
@@ -244,7 +245,7 @@ function App() {
             <Route path="/facturacion" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'vendedor', 'inventario']}>
                 <>
-                  <PageMeta title="Facturación - e-business store(EBS)" description="Sistema de facturación e-business store(EBS)" />
+                  <PageMeta title="Facturación - Distribuciones Pharmahumanos" description="Sistema de facturación de Distribuciones Pharmahumanos" />
                   <InvoiceScreen />
                 </>
               </ProtectedRoute>
@@ -410,6 +411,15 @@ function App() {
                   {user?.role === 'contabilidad' 
                     ? <CatalogoProductosWrapper mode="contabilidad" /> 
                     : <CatalogoProductosWrapper mode="admin" />}
+                </>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/campana-catalogo" element={
+              <ProtectedRoute requiredRoles={['superadmin', 'admin', 'vendedor', 'inventario', 'contabilidad']}>
+                <>
+                  <PageMeta title="Campaña de Catálogo - Distribuciones Pharmahumanos" description="Selección y envío masivo del catálogo de Distribuciones Pharmahumanos" />
+                  <CampanaCatalogo />
                 </>
               </ProtectedRoute>
             } />

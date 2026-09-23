@@ -114,7 +114,7 @@ const Login = () => {
         <div className="login-header">
           <img
             src="/logo-maranatha.png"
-            alt="Logo Maranatha"
+            alt="Logo Distribuciones Pharmahumanos"
             className="login-header-logo"
           />
           <p>Sistema de pedidos y catálogo digital</p>
