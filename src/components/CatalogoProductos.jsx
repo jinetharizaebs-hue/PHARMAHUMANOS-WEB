@@ -5,6 +5,7 @@ import './CatalogoProductos.css';
 import { useAuth } from '../App';
 import { getProductSalesAndRecommendations, mergeRecommendationsIntoProducts } from '../lib/inventoryUtils';
 import { isAuthorizedDeletePassword } from '../lib/deleteAuthorization';
+import { fetchAllProducts } from '../lib/productQueries';
 
 const categoriaIconos = {
   'Populares': 'fa-shampoo',
@@ -548,19 +549,20 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
     const cargarProductos = async () => {
       try {
         setCargando(true);
-        const { data, error } = await supabase
-          .from('productos')
-          .select('*')
-          .order('nombre', { ascending: true });
+        const productosTotales = await fetchAllProducts({
+          supabaseClient: supabase,
+          table: 'productos',
+          select: '*',
+          orderBy: 'nombre',
+          ascending: true,
+        });
 
-        if (error) throw error;
-
-        setProductos(data || []);
+        setProductos(productosTotales || []);
 
         // Obtener recomendaciones de rotación y sugerencias de pedido
         try {
           const recs = await getProductSalesAndRecommendations({ periodDays: 90, leadTimeDays: 14, safetyDays: 7 });
-          const merged = mergeRecommendationsIntoProducts(data || [], recs);
+          const merged = mergeRecommendationsIntoProducts(productosTotales || [], recs);
           setProductos(merged);
         } catch (recErr) {
           console.warn('No se pudieron obtener recomendaciones de inventario:', recErr);

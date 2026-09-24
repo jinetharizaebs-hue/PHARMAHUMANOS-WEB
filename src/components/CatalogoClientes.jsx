@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import './CatalogoClientes.css';
+import { fetchAllProducts } from '../lib/productQueries';
 
 const CatalogoClientes = () => {
   const [productos, setProductos] = useState([]);
@@ -48,9 +49,10 @@ const CatalogoClientes = () => {
         setCargando(true);
         setError(null);
         
-        const { data: productos, error } = await supabase
-          .from('productos')
-          .select(`
+        const productos = await fetchAllProducts({
+          supabaseClient: supabase,
+          table: 'productos',
+          select: `
             id,
             codigo,
             nombre,
@@ -61,11 +63,11 @@ const CatalogoClientes = () => {
             stock,
             activo,
             created_at
-          `)
-          .eq('activo', true)
-          .order('nombre', { ascending: true });
-
-        if (error) throw error;
+          `,
+          orderBy: 'nombre',
+          ascending: true,
+          filters: [{ field: 'activo', operator: 'eq', value: true }],
+        });
 
         const categoriasUnicas = [...new Set(productos.map(p => p.categoria).filter(Boolean))].sort();
         const categoriasDisponibles = ['Todas', ...categoriasUnicas];
@@ -75,6 +77,7 @@ const CatalogoClientes = () => {
         const params = new URLSearchParams(location.search);
         const clienteDesdeEstado = location.state?.clienteData || {};
         const categoriaDesdeUrl = decodeURIComponent(params.get('categoria') || '').trim();
+        const clienteIdDesdeUrl = params.get('clienteId');
 
         if (categoriaDesdeUrl) {
           const categoriaExiste = categoriasDisponibles.some(cat => cat === categoriaDesdeUrl);
@@ -85,12 +88,31 @@ const CatalogoClientes = () => {
           }
         }
 
+        if (clienteIdDesdeUrl) {
+          const { data: clientePorId, error: clienteError } = await supabase
+            .from('clientes')
+            .select('id, nombre, telefono, direccion, correo, vendedor')
+            .eq('id', clienteIdDesdeUrl)
+            .single();
+
+          if (!clienteError && clientePorId) {
+            setClienteInfo(prev => ({
+              ...prev,
+              nombre: clientePorId.nombre || '',
+              telefono: clientePorId.telefono || '',
+              direccion: clientePorId.direccion || '',
+              correo: clientePorId.correo || '',
+              vendedor: clientePorId.vendedor || prev.vendedor
+            }));
+          }
+        }
+
         setClienteInfo(prev => ({
           ...prev,
-          nombre: clienteDesdeEstado.nombre || params.get('nombre') || '',
-          telefono: clienteDesdeEstado.telefono || params.get('telefono') || '',
-          direccion: clienteDesdeEstado.direccion || params.get('direccion') || '',
-          correo: clienteDesdeEstado.correo || params.get('correo') || '',
+          nombre: clienteDesdeEstado.nombre || prev.nombre || params.get('nombre') || '',
+          telefono: clienteDesdeEstado.telefono || prev.telefono || params.get('telefono') || '',
+          direccion: clienteDesdeEstado.direccion || prev.direccion || params.get('direccion') || '',
+          correo: clienteDesdeEstado.correo || prev.correo || params.get('correo') || '',
           vendedor: clienteDesdeEstado.vendedor || prev.vendedor
         }));
       } catch (error) {

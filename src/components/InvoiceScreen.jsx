@@ -5,6 +5,7 @@ import ClientesScreen from './ClientesScreen';
 import { supabase } from './supabaseClient';
 import './InvoiceScreen.css';
 import { useAuth } from '../App';
+import { fetchAllProducts } from '../lib/productQueries';
 
 const getLocalDateForInput = () => {
   const now = new Date();
@@ -90,12 +91,14 @@ const InvoiceScreen = () => {
         setCargando(true);
         
         // Cargar productos del catálogo
-        const { data: productosData, error: productosError } = await supabase
-          .from('productos')
-          .select('*')
-          .order('nombre', { ascending: true });
-        
-        if (productosError) throw productosError;
+        const productosData = await fetchAllProducts({
+          supabaseClient: supabase,
+          table: 'productos',
+          select: '*',
+          orderBy: 'nombre',
+          ascending: true,
+        });
+
         setProductosCatalogo(productosData || []);
         
         // Cargar clientes

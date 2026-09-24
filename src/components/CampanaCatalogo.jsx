@@ -392,19 +392,6 @@ const CampanaCatalogo = () => {
     }
 
     if (cliente) {
-      if (cliente.nombre) {
-        params.set('cliente', cliente.nombre.trim());
-      }
-
-      const telefonoCliente = cliente.telefonoWhatsApp || normalizarTelefonoWhatsApp(cliente.telefono);
-      if (telefonoCliente) {
-        params.set('telefono', telefonoCliente);
-      }
-
-      if (cliente.direccion) {
-        params.set('direccion', cliente.direccion.trim());
-      }
-
       if (cliente.id) {
         params.set('clienteId', String(cliente.id));
       }
@@ -498,8 +485,9 @@ const CampanaCatalogo = () => {
 
     const mensajePlano = [
       `Hola ${cliente.nombre},`,
-      'Te comparto nuestro catálogo digital de Distribuciones Pharmahumanos para que revises productos y puedas hacer tu pedido fácilmente.',
+      'Te compartimos nuestro catálogo digital de Distribuciones Pharmahumanos para que revises nuestros productos y puedas realizar tu pedido fácilmente.',
       '',
+      'Haz clic aquí para ver nuestro catálogo y hacer tu pedido:',
       linkFinal
     ].join('\n');
 
