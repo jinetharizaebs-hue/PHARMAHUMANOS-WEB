@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
-import { useAuth } from '../App';
-import { isAuthorizedDeletePassword } from '../lib/deleteAuthorization';
+import { useAuth } from '../context/auth';
+import { reauthenticatePrivilegedUser } from '../lib/deleteAuthorization';
 import './FacturaDetalle.css';
 
 const getLocalDateForInput = () => {
@@ -839,7 +839,15 @@ const FacturaDetalle = () => {
 
     // Solicitar contraseña para editar
     const password = prompt('Ingrese la contraseña para editar el abono:');
-    if (!isAuthorizedDeletePassword(password)) {
+    let autorizado;
+    try {
+      autorizado = await reauthenticatePrivilegedUser(password);
+    } catch (error) {
+      console.error('Error validando la autorización para editar el abono:', error);
+      alert('No fue posible validar la autorización. Intenta de nuevo.');
+      return;
+    }
+    if (!autorizado) {
       alert('❌ Contraseña incorrecta. No se puede editar el abono.');
       return;
     }
@@ -899,7 +907,15 @@ const FacturaDetalle = () => {
 
     // Solicitar contraseña para eliminar
     const password = prompt('Ingrese la contraseña para eliminar el abono:');
-    if (!isAuthorizedDeletePassword(password)) {
+    let autorizado;
+    try {
+      autorizado = await reauthenticatePrivilegedUser(password);
+    } catch (error) {
+      console.error('Error validando la autorización para eliminar el abono:', error);
+      alert('No fue posible validar la autorización. Intenta de nuevo.');
+      return;
+    }
+    if (!autorizado) {
       alert('❌ Contraseña incorrecta. No se puede eliminar el abono.');
       return;
     }

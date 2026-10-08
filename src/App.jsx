@@ -1,6 +1,8 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { supabase } from './lib/supabase';
+import { AuthContext, mapAuthUser, useAuth, validRoles } from './context/auth';
 import InvoiceScreen from './components/InvoiceScreen';
 import FacturasGuardadas from './components/FacturasGuardadas';
 import FacturaDetalle from './components/FacturaDetalle';
@@ -27,35 +29,10 @@ import InformeVentasDiarias from './components/InformeVentasDiarias';
 import InformeCobrosDiarios from './components/InformeCobrosDiarios';
 import CampanaCatalogo from './components/CampanaCatalogo';
 
-// Contexto de autenticación
-const AuthContext = createContext();
-
-// Hook personalizado para usar el contexto de autenticación
-const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
-  }
-  return context;
-};
-
-// Exportar por separado
-export { AuthContext, useAuth };
-
 // Componente para proteger rutas según el rol
 const ProtectedRoute = ({ children, requiredRoles = [] }) => {
-  const { user, isLoading, checkSession } = useAuth();
+  const { user, isLoading } = useAuth();
   const location = useLocation();
-
-  // Verificación de sesión al montar el componente
-  useEffect(() => {
-    if (!isLoading && user) {
-      const isSessionValid = checkSession();
-      if (!isSessionValid) {
-        console.log('Sesión expirada o inválida');
-      }
-    }
-  }, [location.pathname, user, isLoading, checkSession]);
 
   // Estado de carga
   if (isLoading) {
@@ -72,7 +49,11 @@ const ProtectedRoute = ({ children, requiredRoles = [] }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Verificar roles si se especifican (admin siempre tiene acceso)
+  if (!validRoles.includes(user.role)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  // El rol de administrador proviene de app_metadata y no del perfil editable.
   if (requiredRoles.length > 0 && user.role !== 'admin' && !requiredRoles.includes(user.role)) {
     return <Navigate to="/unauthorized" replace />;
   }
@@ -99,7 +80,7 @@ const PageMeta = ({ title, description }) => {
       <meta property="og:description" content={description || 'Sistema de gestión y catálogo de productos'} />
       
       {/* Prevenir indexación en desarrollo */}
-      {process.env.NODE_ENV === 'development' && (
+      {import.meta.env.DEV && (
         <meta name="robots" content="noindex, nofollow" />
       )}
     </Helmet>
@@ -160,36 +141,96 @@ function App() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Verificación de sesión al cargar la app
+  // Supabase Auth es la única fuente de verdad para la sesión.
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    let mounted = true;
+    let validationRun = 0;
+
+    const verifyUser = async () => {
+      const currentRun = ++validationRun;
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Error leyendo la sesión de Supabase:', sessionError);
+        if (mounted && currentRun === validationRun) setUser(null);
+        return;
+      }
+      if (!sessionData.session) {
+        if (mounted && currentRun === validationRun) setUser(null);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error('Error validando el usuario con Supabase:', error);
+        if (mounted && currentRun === validationRun) setUser(null);
+        return;
+      }
+      if (mounted && currentRun === validationRun) {
+        setUser(mapAuthUser(data.user));
+      }
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION') return;
+      if (!session) {
+        validationRun += 1;
+        if (mounted) setUser(null);
+        return;
+      }
+      setTimeout(() => {
+        verifyUser().catch((error) => {
+          console.error('Error verificando el usuario de Supabase:', error);
+          if (mounted) setUser(null);
+        });
+      }, 0);
+    });
+
+    const loadSession = async () => {
+      await verifyUser();
+      if (mounted) setIsLoading(false);
+    };
+
+    loadSession().catch((error) => {
+      console.error('Error cargando la sesión de Supabase:', error);
+      if (mounted) {
+        setUser(null);
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Función de login
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
+  const login = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password
+    });
+    if (error) throw error;
 
-  // Función de logout
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-  };
-
-  // Función para verificar la sesión
-  const checkSession = () => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-      logout();
-      return false;
+    const authUser = mapAuthUser(data.user);
+    if (!validRoles.includes(authUser?.role)) {
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) {
+        console.error('Error cerrando una sesión sin rol válido:', signOutError);
+      }
+      throw new Error('Tu cuenta no tiene un rol autorizado. Contacta al administrador.');
     }
-    return true;
+
+    setUser(authUser);
+    return authUser;
   };
+
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    setUser(null);
+  };
+
+  const checkSession = () => Boolean(user);
 
   const value = {
     user,

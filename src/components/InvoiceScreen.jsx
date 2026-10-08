@@ -4,7 +4,7 @@ import FacturaPreview from './FacturaPreview';
 import ClientesScreen from './ClientesScreen';
 import { supabase } from './supabaseClient';
 import './InvoiceScreen.css';
-import { useAuth } from '../App';
+import { useAuth } from '../context/auth';
 import { fetchAllProducts } from '../lib/productQueries';
 
 const getLocalDateForInput = () => {

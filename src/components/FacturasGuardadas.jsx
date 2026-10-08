@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import * as XLSX from 'xlsx';
-import { isAuthorizedDeletePassword } from '../lib/deleteAuthorization';
+import { reauthenticatePrivilegedUser } from '../lib/deleteAuthorization';
 import './FacturasGuardadas.css';
 
 const parseLocalDate = (value) => {
@@ -107,8 +107,8 @@ const FacturasGuardadas = () => {
   };
 
   // Función para verificar la contraseña
-  const verificarPassword = () => {
-    return isAuthorizedDeletePassword(password);
+  const verificarPassword = async () => {
+    return reauthenticatePrivilegedUser(password);
   };
 
   // Procesar facturas con filtros, orden y saldos
@@ -259,7 +259,15 @@ const FacturasGuardadas = () => {
 
   // Eliminar factura (y sus abonos asociados)
   const eliminarFactura = async (id) => {
-    if (!verificarPassword()) {
+    let isAuthorized;
+    try {
+      isAuthorized = await verificarPassword();
+    } catch (error) {
+      console.error('Error validando la autorización para eliminar la factura:', error);
+      setErrorPassword('No fue posible validar la autorización. Intenta de nuevo.');
+      return;
+    }
+    if (!isAuthorized) {
       setErrorPassword('Contraseña incorrecta');
       return;
     }

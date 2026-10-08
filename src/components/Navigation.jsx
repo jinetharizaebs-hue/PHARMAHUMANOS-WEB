@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../App';
+import { useAuth } from '../context/auth';
 import './Navigation.css';
 
 const Navigation = () => {
@@ -9,12 +9,19 @@ const Navigation = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuActivo, setMenuActivo] = useState(null);
+  const [logoutError, setLogoutError] = useState('');
   const menuRef = useRef(null);
   const toggleRef = useRef(null);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    setLogoutError('');
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Error cerrando sesión:', error);
+      setLogoutError('No fue posible cerrar la sesión. Intenta de nuevo.');
+    }
   };
 
   const toggleMenu = () => {
@@ -368,6 +375,7 @@ const Navigation = () => {
                 <span className="logout-icon">🚪</span>
                 <span className="logout-text">Cerrar sesión</span>
               </button>
+              {logoutError && <span role="alert">{logoutError}</span>}
             </>
           ) : (
             <Link to="/login" className="login-link">

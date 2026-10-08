@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../App';
+import { useAuth } from '../context/auth';
+import { fetchAllProducts } from '../lib/productQueries';
 import './MovimientosInventario.css';
 
 export default function MovimientosInventario() {
@@ -30,9 +31,10 @@ export default function MovimientosInventario() {
     if (busqueda.trim() === '') {
       setProductosFiltrados(productos);
     } else {
+      const termino = busqueda.trim().toLocaleLowerCase();
       const filtrados = productos.filter(producto =>
-        producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        producto.id.toString().includes(busqueda)
+        (producto.nombre || '').toLocaleLowerCase().includes(termino) ||
+        String(producto.id).includes(termino)
       );
       setProductosFiltrados(filtrados);
     }
@@ -40,18 +42,17 @@ export default function MovimientosInventario() {
 
   const cargarProductos = async () => {
     try {
-      const { data, error } = await supabase
-        .from('productos')
-        .select('id, nombre, precio, stock')
-        .order('nombre');
+      setError('');
+      const data = await fetchAllProducts({
+        supabaseClient: supabase,
+        table: 'productos',
+        select: 'id, nombre, precio, stock',
+        orderBy: 'nombre',
+        ascending: true
+      });
 
-      if (error) {
-        setError('Error al cargar productos: ' + error.message);
-      } else {
-        setProductos(data);
-        setProductosFiltrados(data);
-        setError('');
-      }
+      setProductos(data);
+      setProductosFiltrados(data);
     } catch (err) {
       setError('Error inesperado: ' + err.message);
     }
@@ -118,7 +119,7 @@ export default function MovimientosInventario() {
         stockNuevo = stockAnterior - cantidadMovida;
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('movimientos_inventario')
         .insert([{
           producto_id: movimiento.producto_id,

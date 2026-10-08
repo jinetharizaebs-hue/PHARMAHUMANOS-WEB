@@ -93,60 +93,27 @@
 
 ---
 
-## 🔧 Cómo Cambiar el Rol de un Usuario
+## 🔐 Crear usuarios y asignar roles en Supabase Auth
 
-### Método 1: Agregar Usuario en Login.jsx (LOCAL)
+Las cuentas del equipo se autentican con correo y contraseña de Supabase Auth. No agregues usuarios ni contraseñas al código fuente ni a `user_metadata`.
 
-Editar `/src/components/Login.jsx` y agregar un nuevo objeto a la lista `users`:
+1. Configura `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en el entorno de despliegue.
+2. En Supabase, crea cada cuenta desde **Authentication → Users** con el correo real del colaborador y una contraseña única y robusta. Desactiva el registro público si solo el equipo debe tener cuentas.
+3. Asigna el rol desde el SQL Editor de Supabase, usando una cuenta administradora. La aplicación solo confía en `app_metadata.role`:
 
-```jsx
-const users = [
-  // ... otros usuarios
-  { 
-    id: 8,
-    username: 'nuevouser',
-    password: 'contraseña123',
-    role: 'superadmin',  // o 'admin', 'contabilidad', 'inventario', 'vendedor'
-    descripcion: 'Descripción del usuario'
-  },
-];
-```
-
-**Usuarios disponibles actualmente:**
-
-| Usuario | Contraseña | Rol | 
-|---------|-----------|-----|
-| `Edwin` | `emc` | admin |
-| `fredy` | `801551` | admin |
-| `EMC` | `superadmin123` | **superadmin** 🔐 |
-| `paola` | `1v3nt` | inventario |
-| `caro` | `caro123` | contabilidad |
-| `fabian` | `0411` | admin |
-
----
-
-### Método 2: Directamente en Supabase (si usas base de datos)
-
-Si tu aplicación está conectada a Supabase, ejecuta estos comandos en la tabla apropiada:
-
-**Opción A - Si los roles están en tabla `public.usuarios` o `public.perfiles`:**
 ```sql
-UPDATE public.usuarios 
-SET rol = 'superadmin'
-WHERE email = 'usuario@email.com';
+UPDATE auth.users
+SET raw_app_meta_data =
+  COALESCE(raw_app_meta_data, '{}'::jsonb) || jsonb_build_object('role', 'admin')
+WHERE email = 'usuario@empresa.com'
+RETURNING id, email;
 ```
 
-**Opción B - Si los roles están en `auth.users` (raw_user_meta_data):**
-```sql
-UPDATE auth.users 
-SET raw_user_meta_data = jsonb_set(COALESCE(raw_user_meta_data, '{}'::jsonb), '{role}', '"superadmin"')
-WHERE email = 'usuario@email.com';
-```
+Usa solo uno de estos roles: `superadmin`, `admin`, `contabilidad`, `inventario`, `vendedor` o `cliente`. Sustituye `admin` por el rol correspondiente y confirma que el `UPDATE` devuelve exactamente la cuenta esperada. Los cambios de rol requieren volver a iniciar sesión.
 
-**Verificar rol actual:**
-```sql
-SELECT username, rol FROM public.usuarios WHERE email = 'usuario@email.com';
-```
+`app_metadata` no puede ser modificado por el usuario desde el cliente como `user_metadata`. Las restricciones de rutas del frontend son solo una ayuda de navegación: protege también las tablas y operaciones con políticas RLS de Supabase. No publiques la clave `service_role` en variables `VITE_*` ni en el navegador.
+
+Antes de desplegar, revisa y ejecuta `sql/SUPABASE_COMPREHENSIVE_PERMISSIONS.sql` en el SQL Editor del proyecto Supabase. El script retira permisos anónimos de inserción, actualización y eliminación de abonos y de eliminación de productos/facturas/detalles. Insertar abonos queda permitido a `admin`, `superadmin`, `contabilidad` y `vendedor`; actualizar o eliminar registros sensibles queda reservado a `admin` y `superadmin`. La confirmación de cambios sensibles vuelve a validar la contraseña real de esa cuenta con Supabase Auth, no una clave compartida del frontend.
 
 ---
 
@@ -183,7 +150,9 @@ Para expandir funcionalidades exclusivas de Superadmin:
 
 ## 📝 Notas Importantes
 
-- El rol se almacena en `user_metadata` de Supabase Auth
+- El rol se obtiene de `app_metadata` asignado por un administrador
+- Las cuentas y contraseñas se administran en Supabase Auth; las credenciales antiguas expuestas deben rotarse y no reutilizarse
+- Las políticas RLS de Supabase deben autorizar las operaciones de datos
 - Los cambios de rol se aplican en el siguiente login
 - Superadmin es el único que puede ver "Clientes por Producto"
 - Se recomienda tener máximo 1-2 cuentas de Superadmin por empresa

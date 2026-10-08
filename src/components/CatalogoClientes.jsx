@@ -133,6 +133,7 @@ const CatalogoClientes = () => {
       ...prev,
       [name]: value
     }));
+    setError(null);
   };
 
   const handleBusquedaChange = (e) => {
@@ -974,6 +975,12 @@ const CatalogoClientes = () => {
                     <span>Total:</span>
                     <span className="total-amount">{formatPrecio(calcularTotal())}</span>
                   </div>
+
+                  {error && (
+                    <div className="cart-error-message" role="alert">
+                      <i className="fas fa-exclamation-triangle"></i> {error}
+                    </div>
+                  )}
 
                   {/* Botones de acción */}
                   <div className="cart-actions">

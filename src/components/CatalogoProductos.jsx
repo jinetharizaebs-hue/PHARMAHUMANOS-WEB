@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import './CatalogoProductos.css';
-import { useAuth } from '../App';
+import { useAuth } from '../context/auth';
 import { getProductSalesAndRecommendations, mergeRecommendationsIntoProducts } from '../lib/inventoryUtils';
-import { isAuthorizedDeletePassword } from '../lib/deleteAuthorization';
+import { reauthenticatePrivilegedUser } from '../lib/deleteAuthorization';
 import { fetchAllProducts } from '../lib/productQueries';
 
 const categoriaIconos = {
@@ -470,12 +470,17 @@ const ReporteInventario = ({ productos }) => {
 const ModalConfirmacion = ({ isOpen, onClose, onConfirm, productoNombre }) => {
   const [password, setPassword] = useState('');
 
-  const handleConfirm = () => {
-    if (isAuthorizedDeletePassword(password)) {
-      onConfirm();
-      onClose();
-    } else {
-      alert('Contraseña incorrecta. Comunícate con soporte 3004583117');
+  const handleConfirm = async () => {
+    try {
+      if (await reauthenticatePrivilegedUser(password)) {
+        onConfirm();
+        onClose();
+      } else {
+        alert('Contraseña incorrecta. Comunícate con soporte 3004583117');
+      }
+    } catch (error) {
+      console.error('Error validando la autorización para eliminar el producto:', error);
+      alert('No fue posible validar la autorización. Intenta de nuevo.');
     }
   };
 

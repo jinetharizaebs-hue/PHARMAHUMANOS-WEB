@@ -1095,6 +1095,20 @@ body {
   left: 5px;
 }
 
+.cart-error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #f5c2c7;
+  border-radius: 8px;
+  background: #ffebee;
+  color: #b42318;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 .form-group small {
   color: #666;
   font-size: 0.75rem;

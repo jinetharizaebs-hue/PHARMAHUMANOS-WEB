@@ -1,52 +1,31 @@
-const DEFAULT_DELETE_PASSWORDS = [
-  'Pharma2026p',
-  'Pharma2026f',
-  'Maranatha0425',
-  'edwin',
-  '777'
-];
+import { supabase } from './supabase';
 
-const normalizePasswordList = (value) => {
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => String(item).trim())
-      .filter(Boolean);
+const privilegedRoles = ['admin', 'superadmin'];
+
+export const reauthenticatePrivilegedUser = async (password) => {
+  const candidate = String(password ?? '').trim();
+  if (!candidate) return false;
+
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw sessionError;
+  if (!sessionData.session) return false;
+
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!userData.user?.email || !privilegedRoles.includes(userData.user.app_metadata?.role)) {
+    return false;
   }
 
-  if (typeof value !== 'string') {
-    return [];
-  }
-
-  return value
-    .split(/[\n,]+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-};
-
-export const getConfiguredPasswords = (source) => {
-  if (source !== undefined && source !== null) {
-    const normalized = normalizePasswordList(source);
-    if (normalized.length > 0) {
-      return [...new Set(normalized)];
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: userData.user.email,
+    password: candidate
+  });
+  if (error) {
+    if (error.code === 'invalid_credentials' || error.message === 'Invalid login credentials') {
+      return false;
     }
+    throw error;
   }
 
-  const env = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {};
-  const envPasswords = env.VITE_DELETE_PASSWORDS;
-
-  if (envPasswords) {
-    const normalized = normalizePasswordList(envPasswords);
-    if (normalized.length > 0) {
-      return [...new Set(normalized)];
-    }
-  }
-
-  return [...new Set(DEFAULT_DELETE_PASSWORDS)];
-};
-
-export const isAuthorizedDeletePassword = (password, source) => {
-  const normalizedPassword = String(password ?? '').trim();
-  if (!normalizedPassword) return false;
-
-  return getConfiguredPasswords(source).includes(normalizedPassword);
+  return privilegedRoles.includes(data.user?.app_metadata?.role);
 };

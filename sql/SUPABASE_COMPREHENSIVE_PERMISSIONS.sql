@@ -247,7 +247,64 @@ CREATE POLICY "Allow anon update preparaciones_pedidos" ON preparaciones_pedidos
 CREATE POLICY "Allow anon delete preparaciones_pedidos" ON preparaciones_pedidos FOR DELETE USING (true);
 
 -- ====== CONCEDER PRIVILEGIOS GLOBALES AL ROL ANON ======
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon;
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO anon;
+
+-- Endurecer operaciones sensibles: las claves compartidas del navegador no autorizan cambios.
+ALTER TABLE IF EXISTS public.productos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.facturas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.abonos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.detalles_factura ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow anon delete productos" ON public.productos;
+DROP POLICY IF EXISTS "Allow anon delete facturas" ON public.facturas;
+DROP POLICY IF EXISTS "Allow anon delete abonos" ON public.abonos;
+DROP POLICY IF EXISTS "Allow anon delete detalles_factura" ON public.detalles_factura;
+DROP POLICY IF EXISTS "Allow anon update abonos" ON public.abonos;
+DROP POLICY IF EXISTS "Allow anon insert abonos" ON public.abonos;
+
+DROP POLICY IF EXISTS "Admins can delete productos" ON public.productos;
+DROP POLICY IF EXISTS "Admins can delete facturas" ON public.facturas;
+DROP POLICY IF EXISTS "Admins can delete abonos" ON public.abonos;
+DROP POLICY IF EXISTS "Admins can delete detalles_factura" ON public.detalles_factura;
+DROP POLICY IF EXISTS "Admins can update abonos" ON public.abonos;
+DROP POLICY IF EXISTS "Staff can insert abonos" ON public.abonos;
+
+CREATE POLICY "Admins can delete productos"
+  ON public.productos FOR DELETE TO authenticated
+  USING ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'superadmin'));
+
+CREATE POLICY "Admins can delete facturas"
+  ON public.facturas FOR DELETE TO authenticated
+  USING ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'superadmin'));
+
+CREATE POLICY "Admins can delete abonos"
+  ON public.abonos FOR DELETE TO authenticated
+  USING ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'superadmin'));
+
+CREATE POLICY "Admins can delete detalles_factura"
+  ON public.detalles_factura FOR DELETE TO authenticated
+  USING ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'superadmin'));
+
+CREATE POLICY "Admins can update abonos"
+  ON public.abonos FOR UPDATE TO authenticated
+  USING ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'superadmin'))
+  WITH CHECK ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'superadmin'));
+
+CREATE POLICY "Staff can insert abonos"
+  ON public.abonos FOR INSERT TO authenticated
+  WITH CHECK ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'superadmin', 'contabilidad', 'vendedor'));
+
+REVOKE DELETE ON ALL TABLES IN SCHEMA public FROM anon;
+REVOKE INSERT ON TABLE public.abonos FROM anon;
+REVOKE UPDATE ON TABLE public.abonos FROM anon;
+GRANT DELETE ON TABLE
+  public.productos,
+  public.facturas,
+  public.abonos,
+  public.detalles_factura
+TO authenticated;
+GRANT UPDATE ON TABLE public.abonos TO authenticated;
+GRANT INSERT ON TABLE public.abonos TO authenticated;
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO anon;
 
 COMMIT;
