@@ -20,51 +20,68 @@ const obtenerIconoCategoria = (categoria) => {
   return categoriaIconos[categoria] || 'fa-tag';
 };
 
-// Componente para subir imágenes a Cloudinary
-const CloudinaryUpload = ({ onImageUpload }) => {
+const BUCKET_IMAGENES = 'productos';
+const IMAGEN_MAX_LADO = 800;
+const IMAGEN_CALIDAD = 0.75;
+
+// Reduce la imagen a máx. 800 px y la convierte a WebP en el navegador,
+// para que cada foto pese ~50-100 KB en vez de varios MB.
+const comprimirImagen = (file) => new Promise((resolve, reject) => {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    const escala = Math.min(1, IMAGEN_MAX_LADO / Math.max(img.width, img.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.width * escala);
+    canvas.height = Math.round(img.height * escala);
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('No se pudo comprimir la imagen'))),
+      'image/webp',
+      IMAGEN_CALIDAD
+    );
+  };
+  img.onerror = () => {
+    URL.revokeObjectURL(url);
+    reject(new Error('No se pudo leer la imagen'));
+  };
+  img.src = url;
+});
+
+// Componente para subir imágenes a Supabase Storage
+const ImagenUpload = ({ onImageUpload }) => {
   const [uploading, setUploading] = useState(false);
-  const cloudinaryCloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const cloudinaryUploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
+    e.target.value = '';
     if (!file) return;
 
     if (!file.type.match('image.*')) {
       alert('Por favor, selecciona un archivo de imagen (JPEG, PNG, etc.)');
       return;
     }
-    
-    if (file.size > 5 * 1024 * 1024) {
-      alert('La imagen es demasiado grande (máximo 5MB)');
+
+    if (file.size > 20 * 1024 * 1024) {
+      alert('La imagen es demasiado grande (máximo 20MB)');
       return;
     }
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    if (!cloudinaryCloudName || !cloudinaryUploadPreset) {
-      alert('Faltan variables de Cloudinary (VITE_CLOUDINARY_CLOUD_NAME y VITE_CLOUDINARY_UPLOAD_PRESET).');
-      return;
-    }
-
-    formData.append('upload_preset', cloudinaryUploadPreset);
-    formData.append('folder', 'productos');
 
     try {
       setUploading(true);
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+      const blob = await comprimirImagen(file);
+      const ruta = `nuevos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
 
-      const data = await response.json();
+      const { error } = await supabase.storage
+        .from(BUCKET_IMAGENES)
+        .upload(ruta, blob, { contentType: 'image/webp', cacheControl: '31536000' });
+      if (error) throw error;
+
+      const { data } = supabase.storage.from(BUCKET_IMAGENES).getPublicUrl(ruta);
       onImageUpload({
-        imagenUrl: data.secure_url,
-        imagenPublicId: data.public_id
+        imagenUrl: data.publicUrl,
+        imagenPublicId: ruta
       });
     } catch (error) {
       console.error('Error subiendo imagen:', error);
@@ -1134,7 +1151,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
 
                 <div className="form-group">
                   <label>Imagen:</label>
-                  <CloudinaryUpload 
+                  <ImagenUpload
                     onImageUpload={({imagenUrl, imagenPublicId}) => {
                       setNuevoProducto({
                         ...nuevoProducto,
