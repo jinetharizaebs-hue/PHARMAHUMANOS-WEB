@@ -39,6 +39,8 @@ const FacturaDetalle = () => {
   const [factura, setFactura] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [copiado, setCopiado] = useState(false);
+  // Costo y utilidad ocultos por defecto: la pantalla puede estar a la vista del cliente
+  const [mostrarUtilidad, setMostrarUtilidad] = useState(false);
   const [abonos, setAbonos] = useState([]);
   const [nuevoAbono, setNuevoAbono] = useState({
     monto: '',
@@ -171,21 +173,15 @@ const FacturaDetalle = () => {
   }, [id]);
 
   const copiarDatos = () => {
-    const utilidadTotal = (factura.productos || []).reduce((sum, p) => {
-      const utilidadLinea = p.utilidad_total ?? (((p.precio || 0) - (p.costo_compra || 0)) * (p.cantidad || 0));
-      return sum + (utilidadLinea || 0);
-    }, 0);
-
     const datos = `
       Cuenta de Cobro #${factura.id}
       Cliente: ${factura.cliente}
       Fecha: ${new Date(factura.fecha).toLocaleDateString()}
       Total: $${factura.total.toFixed(2)}
-      Utilidad Total: $${utilidadTotal.toFixed(2)}
       Total en letras: ${convertirNumeroALetras(Math.round(factura.total))}
       ${getNotaClienteFactura(factura) ? `Notas del cliente: ${getNotaClienteFactura(factura)}` : ''}
       Saldo Pendiente: $${(factura.total - calcularTotalAbonado()).toFixed(2)}
-      Productos: ${factura.productos.map(p => `\n  - ${p.nombre} (${p.cantidad} x $${p.precio.toFixed(2)}) | Utilidad: $${(p.utilidad_total ?? ((p.precio - (p.costo_compra || 0)) * p.cantidad)).toFixed(2)}`).join('')}
+      Productos: ${factura.productos.map(p => `\n  - ${p.nombre} (${p.cantidad} x $${p.precio.toFixed(2)})`).join('')}
       Abonos: ${abonos.length > 0 ? abonos.map(a => `\n  - $${a.monto.toFixed(2)} (${formatearFecha(a.fecha)})`).join('') : ' Ninguno'}
     `;
     navigator.clipboard.writeText(datos);
@@ -1094,15 +1090,25 @@ const FacturaDetalle = () => {
       </div>
 
       <div className="productos-table-container">
-        <h3>Productos</h3>
+        <h3>
+          Productos
+          <button
+            type="button"
+            className="button icon-button"
+            style={{ marginLeft: '10px', fontSize: '0.8rem' }}
+            onClick={() => setMostrarUtilidad(v => !v)}
+          >
+            {mostrarUtilidad ? 'Ocultar utilidad' : 'Ver utilidad'}
+          </button>
+        </h3>
         <table className="productos-table">
           <thead>
             <tr>
               <th>Producto</th>
               <th>Cantidad</th>
-              <th>Costo Unitario</th>
+              {mostrarUtilidad && <th>Costo Unitario</th>}
               <th>Precio Unitario</th>
-              <th>Utilidad</th>
+              {mostrarUtilidad && <th>Utilidad</th>}
               <th>Subtotal</th>
             </tr>
           </thead>
@@ -1111,27 +1117,31 @@ const FacturaDetalle = () => {
               <tr key={index}>
                 <td>{producto.nombre}</td>
                 <td>{producto.cantidad}</td>
-                <td>{formatearMoneda(producto.costo_compra || 0)}</td>
+                {mostrarUtilidad && <td>{formatearMoneda(producto.costo_compra || 0)}</td>}
                 <td>{formatearMoneda(producto.precio)}</td>
-                <td>{formatearMoneda(producto.utilidad_total ?? ((producto.precio - (producto.costo_compra || 0)) * producto.cantidad))}</td>
+                {mostrarUtilidad && (
+                  <td>{formatearMoneda(producto.utilidad_total ?? ((producto.precio - (producto.costo_compra || 0)) * producto.cantidad))}</td>
+                )}
                 <td>{formatearMoneda(producto.cantidad * producto.precio)}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan="5" className="total-label">Total</td>
+              <td colSpan={mostrarUtilidad ? 5 : 3} className="total-label">Total</td>
               <td className="total-value">{formatearMoneda(factura.total)}</td>
             </tr>
-            <tr>
-              <td colSpan="5" className="total-label">Utilidad Total</td>
-              <td className="total-value">
-                {formatearMoneda((factura.productos || []).reduce((sum, producto) => {
-                  const utilidadLinea = producto.utilidad_total ?? ((producto.precio - (producto.costo_compra || 0)) * producto.cantidad);
-                  return sum + (utilidadLinea || 0);
-                }, 0))}
-              </td>
-            </tr>
+            {mostrarUtilidad && (
+              <tr>
+                <td colSpan="5" className="total-label">Utilidad Total</td>
+                <td className="total-value">
+                  {formatearMoneda((factura.productos || []).reduce((sum, producto) => {
+                    const utilidadLinea = producto.utilidad_total ?? ((producto.precio - (producto.costo_compra || 0)) * producto.cantidad);
+                    return sum + (utilidadLinea || 0);
+                  }, 0))}
+                </td>
+              </tr>
+            )}
           </tfoot>
         </table>
       </div>

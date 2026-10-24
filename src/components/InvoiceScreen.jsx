@@ -27,6 +27,8 @@ const InvoiceScreen = () => {
   const [telefono, setTelefono] = useState('');
   const [correo, setCorreo] = useState('');
   const [productos, setProductos] = useState([]);
+  // Costo y utilidad ocultos por defecto: la pantalla puede estar a la vista del cliente
+  const [mostrarUtilidad, setMostrarUtilidad] = useState(false);
   const [nombreProducto, setNombreProducto] = useState('');
   const [cantidadProducto, setCantidadProducto] = useState('');
   const [precioProducto, setPrecioProducto] = useState('');
@@ -571,7 +573,6 @@ const InvoiceScreen = () => {
           ? { ...producto, nota_cliente: notaClienteLimpia || null }
           : producto
       ));
-      const utilidadTotalFactura = productosConNotaCliente.reduce((sum, p) => sum + (p.utilidad_total || 0), 0);
 
       const facturaData = {
         cliente,
@@ -625,7 +626,7 @@ const InvoiceScreen = () => {
 
       // Mostrar diálogo de confirmación con opción de imprimir
       const usuarioQuiereImprimir = window.confirm(
-        `✅ Factura guardada exitosamente!\n\nN° Factura: ${numeroFactura}\nCliente: ${cliente}\nTotal Venta: $${facturaData.total.toFixed(2)}\nUtilidad estimada: $${utilidadTotalFactura.toFixed(2)}\n\n¿Deseas imprimir la factura ahora?`
+        `✅ Factura guardada exitosamente!\n\nN° Factura: ${numeroFactura}\nCliente: ${cliente}\nTotal Venta: $${facturaData.total.toFixed(2)}\n\n¿Deseas imprimir la factura ahora?`
       );
 
       setMostrarVistaPrevia(false);
@@ -687,6 +688,8 @@ const InvoiceScreen = () => {
           onVolver={() => setMostrarVistaPrevia(false)}
           onGuardar={guardarFactura}
           cargando={cargando}
+          mostrarUtilidad={mostrarUtilidad}
+          onToggleUtilidad={() => setMostrarUtilidad(v => !v)}
         />
       )}
 
@@ -914,9 +917,20 @@ const InvoiceScreen = () => {
                   </div>
                   <div className="total-preview">
                     Total: <span className="total-amount">${total.toFixed(2)}</span>
-                    <span className="total-amount" style={{ marginLeft: '10px', color: '#10b981' }}>
-                      Utilidad: ${utilidadTotal.toFixed(2)}
-                    </span>
+                    {mostrarUtilidad && (
+                      <span className="total-amount" style={{ marginLeft: '10px', color: '#10b981' }}>
+                        Utilidad: ${utilidadTotal.toFixed(2)}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className="view-toggle-btn"
+                      style={{ marginLeft: '10px' }}
+                      onClick={() => setMostrarUtilidad(v => !v)}
+                      title={mostrarUtilidad ? 'Ocultar costo y utilidad' : 'Ver costo y utilidad'}
+                    >
+                      <i className={`fas ${mostrarUtilidad ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    </button>
                   </div>
                 </div>
                 <div className={`productos-grid ${vistaProductosAgregados === 'list' ? 'view-lista' : 'view-grid'}`}>
@@ -928,9 +942,11 @@ const InvoiceScreen = () => {
                           <span className="producto-detalle">
                             {p.cantidad} x ${p.precio.toFixed(2)} = <strong>${(p.cantidad * p.precio).toFixed(2)}</strong>
                           </span>
-                          <span className="producto-detalle" style={{ color: '#047857' }}>
-                            Costo: ${(toNumber(p.costo_compra) * p.cantidad).toFixed(2)} | Utilidad: ${(p.utilidad_total ?? ((toNumber(p.precio) - toNumber(p.costo_compra)) * p.cantidad)).toFixed(2)}
-                          </span>
+                          {mostrarUtilidad && (
+                            <span className="producto-detalle" style={{ color: '#047857' }}>
+                              Costo: ${(toNumber(p.costo_compra) * p.cantidad).toFixed(2)} | Utilidad: ${(p.utilidad_total ?? ((toNumber(p.precio) - toNumber(p.costo_compra)) * p.cantidad)).toFixed(2)}
+                            </span>
+                          )}
                           {erroresStock[p.id] && (
                             <span className="error-message"> - {erroresStock[p.id]}</span>
                           )}

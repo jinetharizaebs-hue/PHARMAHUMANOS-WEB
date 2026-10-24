@@ -1,10 +1,15 @@
 import React from 'react';
 import './FacturaPreview.css';
 
-const FacturaPreview = ({ factura, onVolver, onGuardar, cargando }) => {
+const FacturaPreview = ({ factura, onVolver, onGuardar, cargando, mostrarUtilidad = false, onToggleUtilidad }) => {
   return (
     <div className="factura-container">
       <h1>VISTA PREVIA</h1>
+      {onToggleUtilidad && (
+        <button type="button" className="boton-volver" onClick={onToggleUtilidad} disabled={cargando}>
+          {mostrarUtilidad ? 'OCULTAR UTILIDAD' : 'VER UTILIDAD'}
+        </button>
+      )}
       
       <div className="datos-factura">
         <div className="fila-datos">
@@ -29,9 +34,9 @@ const FacturaPreview = ({ factura, onVolver, onGuardar, cargando }) => {
           <tr>
             <th>Cantidad</th>
             <th>Producto</th>
-            <th>Costo Unit.</th>
+            {mostrarUtilidad && <th>Costo Unit.</th>}
             <th>Precio Unit.</th>
-            <th>Utilidad</th>
+            {mostrarUtilidad && <th>Utilidad</th>}
             <th>Total</th>
           </tr>
         </thead>
@@ -40,9 +45,11 @@ const FacturaPreview = ({ factura, onVolver, onGuardar, cargando }) => {
             <tr key={p.id}>
               <td>{p.cantidad || 0}</td>
               <td>{p.nombre || "Sin nombre"}</td>
-              <td>${(p.costo_compra || 0).toFixed(2)}</td>
+              {mostrarUtilidad && <td>${(p.costo_compra || 0).toFixed(2)}</td>}
               <td>${(p.precio || 0).toFixed(2)}</td>
-              <td>${((p.utilidad_total ?? (((p.precio || 0) - (p.costo_compra || 0)) * (p.cantidad || 0))) || 0).toFixed(2)}</td>
+              {mostrarUtilidad && (
+                <td>${((p.utilidad_total ?? (((p.precio || 0) - (p.costo_compra || 0)) * (p.cantidad || 0))) || 0).toFixed(2)}</td>
+              )}
               <td>${((p.cantidad || 0) * (p.precio || 0)).toFixed(2)}</td>
             </tr>
           ))}
@@ -51,14 +58,16 @@ const FacturaPreview = ({ factura, onVolver, onGuardar, cargando }) => {
 
       <div className="total">
         <h3>TOTAL: ${factura.total?.toFixed(2) || "0.00"}</h3>
-        <h3>
-          UTILIDAD: ${
-            (factura.productos || []).reduce((sum, p) => {
-              const utilidad = p.utilidad_total ?? (((p.precio || 0) - (p.costo_compra || 0)) * (p.cantidad || 0));
-              return sum + (utilidad || 0);
-            }, 0).toFixed(2)
-          }
-        </h3>
+        {mostrarUtilidad && (
+          <h3>
+            UTILIDAD: ${
+              (factura.productos || []).reduce((sum, p) => {
+                const utilidad = p.utilidad_total ?? (((p.precio || 0) - (p.costo_compra || 0)) * (p.cantidad || 0));
+                return sum + (utilidad || 0);
+              }, 0).toFixed(2)
+            }
+          </h3>
+        )}
       </div>
 
       <div className="botones">

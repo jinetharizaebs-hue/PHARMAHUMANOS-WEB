@@ -377,23 +377,18 @@ const CatalogoClientes = () => {
     setEnviandoPedido(true);
 
     try {
-      // Guardar el pedido en la base de datos
-      const { data: pedido, error } = await supabase
-        .from('pedidos')
-        .insert([
-          {
-            cliente_nombre: clienteInfo.nombre.trim(),
-            cliente_telefono: clienteInfo.telefono.replace(/\D/g, ''),
-            direccion_entrega: clienteInfo.direccion.trim() || '',
-            cliente_notas: clienteInfo.notas.trim() || 'Ninguna',
-            vendedor: clienteInfo.vendedor.trim() || 'Sin asignar',
-            productos: productosSeleccionados,
-            total: calcularTotal(),
-            estado: 'pendiente',
-            fecha_creacion: new Date().toISOString()
-          }
-        ])
-        .select();
+      // Guardar el pedido mediante la función crear_pedido_catalogo
+      // (el visitante no tiene permiso directo sobre la tabla pedidos)
+      const { data: pedidoCreado, error } = await supabase.rpc('crear_pedido_catalogo', {
+        p_cliente_nombre: clienteInfo.nombre.trim(),
+        p_cliente_telefono: clienteInfo.telefono.replace(/\D/g, ''),
+        p_direccion_entrega: clienteInfo.direccion.trim() || '',
+        p_cliente_notas: clienteInfo.notas.trim() || 'Ninguna',
+        p_vendedor: clienteInfo.vendedor.trim() || 'Sin asignar',
+        p_productos: productosSeleccionados,
+        p_total: calcularTotal()
+      });
+      const pedido = pedidoCreado ? [pedidoCreado] : null;
 
       if (error) {
         console.error('❌ Error de Supabase:', error);

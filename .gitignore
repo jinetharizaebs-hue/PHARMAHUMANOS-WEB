@@ -28,3 +28,18 @@ dist-ssr
 .env.local
 rescate-imagenes-cloudinary/
 scripts/migracion_imagenes_*.csv
+
+# Seguridad: nunca versionar claves ni copias de la base de datos
+keys/
+*.pem
+id_rsa*
+id_ed25519*
+*.dump
+*.sql.gz
+backup.sql
+backup_*.zip
+zips/
+docs/*.zip
+backups/**/backup_*/
+backups/**/*.zip
+backups/**/.env
