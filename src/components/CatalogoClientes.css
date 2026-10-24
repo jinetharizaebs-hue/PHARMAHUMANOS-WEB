@@ -1453,8 +1453,15 @@ body {
   margin-top: 20px;
 }
 
-.confirmation-buttons button {
+.confirmation-buttons button,
+.confirmation-buttons a {
   min-width: 120px;
+}
+
+.confirmation-buttons a {
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
 }
 
 /* Botones mejorados */

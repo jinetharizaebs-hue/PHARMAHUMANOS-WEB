@@ -24,6 +24,8 @@ const CatalogoClientes = () => {
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .trim();
+  // El pedido se envía primero a la empresa y luego al vendedor
+  const TELEFONO_EMPRESA = '573117709956';
   const telefonosPorVendedor = {
     'vendedor 1': '573016017182',
     'vendedor 2': '573192091629'
@@ -35,7 +37,7 @@ const CatalogoClientes = () => {
   const [enviandoPedido, setEnviandoPedido] = useState(false);
   const [pedidoEnviado, setPedidoEnviado] = useState(false);
   const [numeroPedido, setNumeroPedido] = useState(null);
-  const [urlWhatsApp, setUrlWhatsApp] = useState(null);
+  const [urlsWhatsApp, setUrlsWhatsApp] = useState({ empresa: null, vendedor: null });
   const [imagenAmpliada, setImagenAmpliada] = useState(null);
   const [ordenamiento, setOrdenamiento] = useState('ultimos-agregados');
   const [cantidadesRapidas] = useState([6, 12]);
@@ -455,14 +457,19 @@ const CatalogoClientes = () => {
       mensaje += `*📅 FECHA:* ${new Date().toLocaleDateString('es-CO')}\n\n`;
       mensaje += `_Pedido generado desde Catálogo Digital_`;
 
-      // Enviar solo al número de WhatsApp del vendedor seleccionado.
+      // WhatsApp solo abre un chat a la vez: primero la empresa y, desde la
+      // confirmación, el cliente lo envía a su vendedor.
       // encodeURIComponent evita que un "#" en la dirección corte el mensaje
-      const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
-      setUrlWhatsApp(url);
+      const texto = encodeURIComponent(mensaje);
+      const urlEmpresa = `https://wa.me/${TELEFONO_EMPRESA}?text=${texto}`;
+      setUrlsWhatsApp({
+        empresa: urlEmpresa,
+        vendedor: `https://wa.me/${numeroWhatsApp}?text=${texto}`
+      });
       if (ventanaWhatsApp && !ventanaWhatsApp.closed) {
-        ventanaWhatsApp.location.href = url;
+        ventanaWhatsApp.location.href = urlEmpresa;
       } else {
-        window.location.href = url;
+        window.location.href = urlEmpresa;
       }
       whatsappAbierto = true;
 
@@ -749,17 +756,28 @@ const CatalogoClientes = () => {
               <i className="fas fa-check-circle"></i>
             </div>
             <h3>¡Pedido Enviado con Éxito!</h3>
-            <p>Tu pedido <strong>#{numeroPedido}</strong> ha sido enviado por WhatsApp.</p>
-            <p>En breve nos comunicaremos contigo para confirmarlo.</p>
+            <p>Tu pedido <strong>#{numeroPedido}</strong> fue registrado.</p>
+            <p><strong>Paso 1:</strong> envía el mensaje de WhatsApp a la empresa.</p>
+            <p><strong>Paso 2:</strong> envíalo también a tu vendedor con el botón de abajo.</p>
             <div className="confirmation-buttons">
-              {urlWhatsApp && (
+              {urlsWhatsApp.vendedor && (
                 <a
                   className="btn-primary"
-                  href={urlWhatsApp}
+                  href={urlsWhatsApp.vendedor}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Abrir WhatsApp
+                  Enviar al vendedor
+                </a>
+              )}
+              {urlsWhatsApp.empresa && (
+                <a
+                  className="btn-secondary"
+                  href={urlsWhatsApp.empresa}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Reenviar a la empresa
                 </a>
               )}
               <button 
