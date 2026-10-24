@@ -35,6 +35,7 @@ const CatalogoClientes = () => {
   const [enviandoPedido, setEnviandoPedido] = useState(false);
   const [pedidoEnviado, setPedidoEnviado] = useState(false);
   const [numeroPedido, setNumeroPedido] = useState(null);
+  const [urlWhatsApp, setUrlWhatsApp] = useState(null);
   const [imagenAmpliada, setImagenAmpliada] = useState(null);
   const [ordenamiento, setOrdenamiento] = useState('ultimos-agregados');
   const [cantidadesRapidas] = useState([6, 12]);
@@ -376,6 +377,11 @@ const CatalogoClientes = () => {
 
     setEnviandoPedido(true);
 
+    // Los navegadores móviles bloquean window.open si no ocurre justo en el clic:
+    // se abre la pestaña ya y se le asigna la URL de WhatsApp cuando el pedido esté guardado
+    const ventanaWhatsApp = window.open('', '_blank');
+    let whatsappAbierto = false;
+
     try {
       // Guardar el pedido mediante la función crear_pedido_catalogo
       // (el visitante no tiene permiso directo sobre la tabla pedidos)
@@ -423,36 +429,43 @@ const CatalogoClientes = () => {
         return;
       }
       
-      let mensaje = `*¡NUEVO PEDIDO!*%0A%0A`;
-      mensaje += `*Vendedor:* ${clienteInfo.vendedor}%0A`;
-      mensaje += `*Cliente:* ${clienteInfo.nombre}%0A`;
-      mensaje += `*Teléfono:* ${clienteInfo.telefono}%0A`;
+      let mensaje = `*¡NUEVO PEDIDO!*\n\n`;
+      mensaje += `*Vendedor:* ${clienteInfo.vendedor}\n`;
+      mensaje += `*Cliente:* ${clienteInfo.nombre}\n`;
+      mensaje += `*Teléfono:* ${clienteInfo.telefono}\n`;
       if (clienteInfo.direccion.trim()) {
-        mensaje += `*Dirección:* ${clienteInfo.direccion}%0A`;
+        mensaje += `*Dirección:* ${clienteInfo.direccion}\n`;
       }
-      mensaje += `%0A*📦 PRODUCTOS SELECCIONADOS:*%0A%0A`;
-      
+      mensaje += `\n*📦 PRODUCTOS SELECCIONADOS:*\n\n`;
+
       productosSeleccionados.forEach(p => {
-        mensaje += `✔️ ${p.nombre}%0A`;
-        mensaje += `   Cantidad: ${p.cantidad}%0A`;
-        mensaje += `   Precio: ${formatPrecio(p.precio)}%0A`;
-        mensaje += `   Subtotal: ${formatPrecio(p.precio * p.cantidad)}%0A%0A`;
+        mensaje += `✔️ ${p.nombre}\n`;
+        mensaje += `   Cantidad: ${p.cantidad}\n`;
+        mensaje += `   Precio: ${formatPrecio(p.precio)}\n`;
+        mensaje += `   Subtotal: ${formatPrecio(p.precio * p.cantidad)}\n\n`;
       });
-      
-      mensaje += `*💰 TOTAL: ${formatPrecio(calcularTotal())}*%0A%0A`;
-      
+
+      mensaje += `*💰 TOTAL: ${formatPrecio(calcularTotal())}*\n\n`;
+
       if (clienteInfo.notas.trim()) {
-        mensaje += `*📝 NOTAS:*%0A${clienteInfo.notas}%0A%0A`;
+        mensaje += `*📝 NOTAS:*\n${clienteInfo.notas}\n\n`;
       }
-      
-      mensaje += `*📋 Nº DE PEDIDO:* ${pedido[0].id}%0A`;
-      mensaje += `*📅 FECHA:* ${new Date().toLocaleDateString('es-CO')}%0A%0A`;
+
+      mensaje += `*📋 Nº DE PEDIDO:* ${pedido[0].id}\n`;
+      mensaje += `*📅 FECHA:* ${new Date().toLocaleDateString('es-CO')}\n\n`;
       mensaje += `_Pedido generado desde Catálogo Digital_`;
 
-      // Enviar solo al número de WhatsApp del vendedor seleccionado
-      const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensaje}`;
-      window.open(url, '_blank');
-      
+      // Enviar solo al número de WhatsApp del vendedor seleccionado.
+      // encodeURIComponent evita que un "#" en la dirección corte el mensaje
+      const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
+      setUrlWhatsApp(url);
+      if (ventanaWhatsApp && !ventanaWhatsApp.closed) {
+        ventanaWhatsApp.location.href = url;
+      } else {
+        window.location.href = url;
+      }
+      whatsappAbierto = true;
+
       // ✅ SOLUCIÓN: Cerrar el carrito automáticamente después de enviar
       setPedidoEnviado(true);
       setMostrarCarrito(false); // ← LÍNEA CRÍTICA AGREGADA
@@ -470,6 +483,10 @@ const CatalogoClientes = () => {
       
       // Scroll al error
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } finally {
+      if (!whatsappAbierto && ventanaWhatsApp && !ventanaWhatsApp.closed) {
+        ventanaWhatsApp.close();
+      }
     }
   };
 
@@ -735,6 +752,16 @@ const CatalogoClientes = () => {
             <p>Tu pedido <strong>#{numeroPedido}</strong> ha sido enviado por WhatsApp.</p>
             <p>En breve nos comunicaremos contigo para confirmarlo.</p>
             <div className="confirmation-buttons">
+              {urlWhatsApp && (
+                <a
+                  className="btn-primary"
+                  href={urlWhatsApp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Abrir WhatsApp
+                </a>
+              )}
               <button 
                 className="btn-secondary"
                 onClick={() => {
