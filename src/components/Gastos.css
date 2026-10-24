@@ -654,3 +654,191 @@
     width: 100%;
   }
 }
+
+/* Vista de empleados */
+.ge-empleados {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 600px;
+}
+
+.ge-empleados-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.ge-empleados-form input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.ge-empleados-form .btn-nuevo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ge-empleados-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ge-empleados-lista li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.ge-empleados-lista li.inactivo span {
+  color: #999;
+}
+
+.ge-empleados-lista button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
+.ge-empleados-nota {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #666;
+}
+
+.setup-notice {
+  margin-bottom: 16px;
+  border: 1px solid #f59e0b;
+  background: #fffbeb;
+  color: #92400e;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+/* Pantalla unificada de gastos */
+.ge-header-acciones {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ge-mes {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: #666;
+  gap: 4px;
+}
+
+.ge-mes input {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.ge-variacion {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #666;
+}
+
+.ge-variacion.sube {
+  color: #c0392b;
+}
+
+.ge-variacion.baja {
+  color: #27ae60;
+}
+
+.ge-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.ge-vacio {
+  color: #999;
+  font-size: 14px;
+}
+
+.ge-filtros-acciones {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+
+.ge-filtros-acciones div {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ge-filtros-acciones button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ge-paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.ge-paginacion button {
+  padding: 8px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+.ge-paginacion button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ge-form .full-width {
+  grid-column: 1 / -1;
+}
+
+.ge-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.categoria-badge,
+.metodo-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  background: #eef0fb;
+  color: #4a4f8a;
+  white-space: nowrap;
+}
+
+.btn-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

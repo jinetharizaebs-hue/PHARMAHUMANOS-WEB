@@ -17,11 +17,9 @@ import Navigation from './components/Navigation';
 import GestionInventario from './components/GestionInventario';
 import DashboardVentas from './components/DashboardVentas';
 import RutasCobro from './components/RutasCobro';
-import GastosScreen from './components/GastosScreen';
-import GastosEmpresa from './components/GastosEmpresa';
-import GastosContabilidadFacil from './components/GastosContabilidadFacil';
+import Gastos from './components/Gastos';
 import CuentasPorPagar from './components/CuentasPorPagar';
-import ContabilidadScreen from './components/ContabilidadScreen';
+import DashboardContabilidad from './components/DashboardContabilidad';
 import HistorialMovimientos from './components/HistorialMovimientos';
 import AuditoriaProductos from './components/AuditoriaProductos';
 import ReporteClientesPorProducto from './components/ReporteClientesPorProducto';
@@ -394,12 +392,12 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Ruta para Gestión de Gastos */}
+            {/* Pantalla única de gastos */}
             <Route path="/gastos" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad', 'vendedor']}>
                 <>
-                  <PageMeta title="Gestión de Gastos - e-business store(EBS)" description="Control y análisis de gastos" />
-                  <GastosScreen />
+                  <PageMeta title="Gastos - e-business store(EBS)" description="Registro y análisis de gastos" />
+                  <Gastos />
                 </>
               </ProtectedRoute>
             } />
@@ -414,32 +412,16 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Ruta para Gastos de la Empresa */}
-            <Route path="/gastos-empresa" element={
-              <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad']}>
-                <>
-                  <PageMeta title="Gastos de la Empresa - e-business store(EBS)" description="Control de gastos operacionales" />
-                  <GastosEmpresa />
-                </>
-              </ProtectedRoute>
-            } />
-
-            {/* Ruta simple para registrar gastos contables */}
-            <Route path="/contabilidad-gastos" element={
-              <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad']}>
-                <>
-                  <PageMeta title="Gastos Facil - e-business store(EBS)" description="Registro rapido de gastos para contabilidad" />
-                  <GastosContabilidadFacil />
-                </>
-              </ProtectedRoute>
-            } />
+            {/* Rutas antiguas de gastos: ahora todo está en /gastos */}
+            <Route path="/gastos-empresa" element={<Navigate to="/gastos" replace />} />
+            <Route path="/contabilidad-gastos" element={<Navigate to="/gastos" replace />} />
 
             {/* Ruta para Dashboard de Contabilidad */}
             <Route path="/dashboard-contabilidad" element={
               <ProtectedRoute requiredRoles={['superadmin', 'admin', 'contabilidad', 'vendedor']}>
                 <>
                   <PageMeta title="Dashboard de Contabilidad - e-business store(EBS)" description="Panel de control contable" />
-                  <ContabilidadScreen />
+                  <DashboardContabilidad />
                 </>
               </ProtectedRoute>
             } />

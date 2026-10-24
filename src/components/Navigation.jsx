@@ -136,9 +136,7 @@ const Navigation = () => {
           icon: '💰',
           tipo: 'grupo',
           submenu: [
-            { path: '/gastos', label: 'Gestión de Gastos', icon: '💸' },
-            { path: '/gastos-empresa', label: 'Gastos de Empresa', icon: '📊' },
-            { path: '/contabilidad-gastos', label: 'Gastos Fácil', icon: '🧾' },
+            { path: '/gastos', label: 'Gastos', icon: '💸' },
             { path: '/cuentas-por-pagar', label: 'Cuentas por Pagar', icon: '📄' },
             { path: '/dashboard-contabilidad', label: 'Dashboard Contabilidad', icon: '📊' }
           ]
@@ -197,9 +195,7 @@ const Navigation = () => {
           icon: '💰',
           tipo: 'grupo',
           submenu: [
-            { path: '/gastos', label: 'Gestión de Gastos', icon: '💸' },
-            { path: '/gastos-empresa', label: 'Gastos de Empresa', icon: '📊' },
-            { path: '/contabilidad-gastos', label: 'Gastos Fácil', icon: '🧾' },
+            { path: '/gastos', label: 'Gastos', icon: '💸' },
             { path: '/cuentas-por-pagar', label: 'Cuentas por Pagar', icon: '📄' },
             { path: '/dashboard-contabilidad', label: 'Dashboard Contabilidad', icon: '📊' }
           ]
@@ -229,10 +225,8 @@ const Navigation = () => {
         { path: '/reportes-cobros', label: 'Reportes de Cobros', icon: '📈', tipo: 'simple' },
         { path: '/informe-ventas-diarias', label: 'Informe Ventas Diarias', icon: '🧾', tipo: 'simple' },
         { path: '/informe-cobros-diarios', label: 'Informe Cobros Diarios', icon: '💵', tipo: 'simple' },
-        { path: '/gastos', label: 'Gestión de Gastos', icon: '💰', tipo: 'simple' },
-        { path: '/gastos-empresa', label: 'Gastos de la Empresa', icon: '💸', tipo: 'simple' },
-        { path: '/contabilidad-gastos', label: 'Gastos Fácil', icon: '🧾', tipo: 'simple' },
-        { path: '/cuentas-por-pagar', label: 'Gastos Empresa (Proveedores)', icon: '📊', tipo: 'simple' },
+        { path: '/gastos', label: 'Gastos', icon: '💸', tipo: 'simple' },
+        { path: '/cuentas-por-pagar', label: 'Cuentas por Pagar', icon: '📄', tipo: 'simple' },
         { path: '/rutas-cobro', label: 'Rutas de Cobro', icon: '🚗', tipo: 'simple' },
         { path: '/gestion-pedidos', label: 'Gestión Pedidos', icon: '🛒', tipo: 'simple' },
         { path: '/dashboard-ventas', label: 'Dashboard Ventas', icon: '📊', tipo: 'simple' },
