@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { obtenerTodasLasFilas } from '../lib/consultas';
+import { fechaDia, fechaLocal, diaSiguiente } from '../lib/fechas';
+
+// Todas las facturas del rango (incluye completo el último día)
+const obtenerFacturasRango = (desde, hasta) => obtenerTodasLasFilas(() => supabase
+  .from('facturas')
+  .select('id, productos')
+  .gte('fecha', desde)
+  .lt('fecha', diaSiguiente(hasta)));
 import * as XLSX from 'xlsx';
 import { Bar, Pie } from 'react-chartjs-2';
 import './MejoresProductos.css';
@@ -40,8 +49,8 @@ export default function MejoresProductos() {
     const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const ultimoDiaMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
     
-    setFechaInicio(primerDiaMes.toISOString().split('T')[0]);
-    setFechaFin(ultimoDiaMes.toISOString().split('T')[0]);
+    setFechaInicio(fechaDia(primerDiaMes));
+    setFechaFin(fechaDia(ultimoDiaMes));
   }, []);
 
   useEffect(() => {
@@ -55,13 +64,7 @@ export default function MejoresProductos() {
       setCargando(true);
       
       // Obtener facturas del período seleccionado
-      const { data: facturas, error } = await supabase
-        .from('facturas')
-        .select('*')
-        .gte('fecha', fechaInicio)
-        .lte('fecha', fechaFin);
-      
-      if (error) throw error;
+      const facturas = await obtenerFacturasRango(fechaInicio, fechaFin);
       
       // Procesar productos vendidos
       const ventasPorProducto = {};
@@ -78,8 +81,9 @@ export default function MejoresProductos() {
               };
             }
             
-            ventasPorProducto[producto.nombre].cantidad += producto.cantidad;
-            ventasPorProducto[producto.nombre].totalVentas += producto.cantidad * producto.precio;
+            const cantidad = Number(producto.cantidad) || 0;
+            ventasPorProducto[producto.nombre].cantidad += cantidad;
+            ventasPorProducto[producto.nombre].totalVentas += cantidad * (Number(producto.precio) || 0);
             ventasPorProducto[producto.nombre].vecesVendido += 1;
           });
         }
@@ -108,8 +112,8 @@ export default function MejoresProductos() {
   const obtenerDatosPeriodoAnterior = async () => {
     try {
       // Calcular período anterior
-      const inicioDate = new Date(fechaInicio);
-      const finDate = new Date(fechaFin);
+      const inicioDate = fechaLocal(fechaInicio);
+      const finDate = fechaLocal(fechaFin);
       const diffTime = finDate - inicioDate;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
       
@@ -120,13 +124,7 @@ export default function MejoresProductos() {
       finAnterior.setDate(inicioDate.getDate() - 1);
       
       // Obtener facturas del período anterior
-      const { data: facturasAnterior, error } = await supabase
-        .from('facturas')
-        .select('*')
-        .gte('fecha', inicioAnterior.toISOString().split('T')[0])
-        .lte('fecha', finAnterior.toISOString().split('T')[0]);
-      
-      if (error) throw error;
+      const facturasAnterior = await obtenerFacturasRango(fechaDia(inicioAnterior), fechaDia(finAnterior));
       
       // Procesar productos vendidos del período anterior
       const ventasPorProductoAnterior = {};
@@ -143,8 +141,9 @@ export default function MejoresProductos() {
               };
             }
             
-            ventasPorProductoAnterior[producto.nombre].cantidad += producto.cantidad;
-            ventasPorProductoAnterior[producto.nombre].totalVentas += producto.cantidad * producto.precio;
+            const cantidad = Number(producto.cantidad) || 0;
+            ventasPorProductoAnterior[producto.nombre].cantidad += cantidad;
+            ventasPorProductoAnterior[producto.nombre].totalVentas += cantidad * (Number(producto.precio) || 0);
             ventasPorProductoAnterior[producto.nombre].vecesVendido += 1;
           });
         }

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { fechaDia, diaSiguiente } from '../lib/fechas';
 import './InformeVentasDiarias.css';
 
 const PAGE_SIZE = 1000;
@@ -60,13 +61,15 @@ const fetchAllFacturas = async (fromDate, toDate) => {
       .from('facturas')
       .select('id, fecha, total, vendedor, cliente')
       .gte('fecha', fromDate)
-      .lte('fecha', toDate)
+      .lt('fecha', diaSiguiente(toDate))
       .order('fecha', { ascending: false })
+      .order('id', { ascending: false })
       .range(from, to);
 
     if (error) throw error;
 
-    const batch = data || [];
+    // fecha es TIMESTAMPTZ: se deja solo el día para agrupar
+    const batch = (data || []).map((factura) => ({ ...factura, fecha: fechaDia(factura.fecha) }));
     allRows = allRows.concat(batch);
 
     if (batch.length < PAGE_SIZE) break;
@@ -85,11 +88,7 @@ const InformeVentasDiarias = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
   });
-  const [fechaFin, setFechaFin] = useState(() => {
-    const now = new Date();
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    return toLocalDateKey(lastDay);
-  });
+  const [fechaFin, setFechaFin] = useState(() => toLocalDateKey());
 
   useEffect(() => {
     const cargarFacturas = async () => {

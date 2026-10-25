@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { obtenerTodasLasFilas } from '../lib/consultas';
+import { fechaDia } from '../lib/fechas';
 import * as XLSX from 'xlsx';
 import './ReporteClientesPorProducto.css';
 
@@ -35,22 +37,22 @@ const ReporteClientesPorProducto = () => {
       try {
         setCargando(true);
 
-       // Cargar TODOS los productos (activos, inactivos, con/sin stock)
-const { data: productosData, error: productosError } = await supabase
-  .from('productos')
-  .select('id, codigo, nombre, precio, categoria, imagen_url, activo, stock')
-  .order('nombre', { ascending: true });
+        // TODOS los productos (activos, inactivos, con/sin stock) y todas las
+        // facturas: Supabase entrega máximo 1000 filas por consulta
+        const [productosData, facturasData] = await Promise.all([
+          obtenerTodasLasFilas(() => supabase
+            .from('productos')
+            .select('id, codigo, nombre, precio, categoria, imagen_url, activo, stock')),
+          obtenerTodasLasFilas(() => supabase
+            .from('facturas')
+            .select('id, fecha, cliente, vendedor, productos'))
+        ]);
 
-        // Cargar facturas con productos
-        const { data: facturasData, error: facturasError } = await supabase
-          .from('facturas')
-          .select('*')
-          .order('fecha', { ascending: false });
-
-        if (facturasError) throw facturasError;
-
-        setProductos(productosData || []);
-        setFacturas(facturasData || []);
+        setProductos(productosData.sort((a, b) => String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es')));
+        // fecha es TIMESTAMPTZ: se deja solo el día (AAAA-MM-DD)
+        setFacturas(facturasData
+          .map(f => ({ ...f, fecha: fechaDia(f.fecha) }))
+          .sort((a, b) => b.fecha.localeCompare(a.fecha)));
       } catch (error) {
         console.error('Error cargando datos:', error);
         alert('Error al cargar datos. Revisa la consola.');

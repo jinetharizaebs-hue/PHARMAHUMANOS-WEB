@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { obtenerTodasLasFilas } from '../lib/consultas';
+import { fechaDia } from '../lib/fechas';
 import './ReportesCobros.css';
 
 const toLocalDateKey = (date = new Date()) => {
@@ -125,26 +127,26 @@ const ReportesCobros = () => {
       try {
         setCargando(true);
         
-        // Cargar facturas desde Supabase
-        const { data: facturasData, error: facturasError } = await supabase
-          .from('facturas')
-          .select('*')
-          .order('fecha', { ascending: false });
-        
-        if (facturasError) throw facturasError;
-        setFacturas(facturasData || []);
-        
-        // Cargar abonos desde Supabase
-        const { data: abonosData, error: abonosError } = await supabase
-          .from('abonos')
-          .select('*')
-          .order('fecha', { ascending: false });
-        
-        if (abonosError) throw abonosError;
-        
+        // Todas las facturas y abonos (Supabase entrega máximo 1000 por consulta).
+        // fecha es TIMESTAMPTZ: se deja solo el día (AAAA-MM-DD).
+        const [facturasRaw, abonosRaw] = await Promise.all([
+          obtenerTodasLasFilas(() => supabase.from('facturas').select('id, fecha, total, cliente, vendedor')),
+          obtenerTodasLasFilas(() => supabase.from('abonos').select('*'))
+        ]);
+
+        const porFechaDesc = (a, b) => b.fecha.localeCompare(a.fecha);
+        const facturasData = facturasRaw
+          .map(f => ({ ...f, fecha: fechaDia(f.fecha), total: Number(f.total) || 0 }))
+          .sort(porFechaDesc);
+        setFacturas(facturasData);
+
         // Enriquecer abonos con información de la factura
-        const abonosEnriquecidos = (abonosData || []).map(abono => {
-          const facturaRelacionada = facturasData.find(f => f.id === abono.factura_id);
+        const facturasPorId = new Map(facturasData.map(f => [f.id, f]));
+        const abonosEnriquecidos = abonosRaw
+          .map(abono => ({ ...abono, fecha: fechaDia(abono.fecha) }))
+          .sort(porFechaDesc)
+          .map(abono => {
+          const facturaRelacionada = facturasPorId.get(abono.factura_id);
           return {
             ...abono,
             vendedor: facturaRelacionada?.vendedor || 'Sin asignar',

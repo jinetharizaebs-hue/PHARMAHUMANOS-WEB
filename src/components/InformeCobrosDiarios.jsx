@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import { fechaDia } from '../lib/fechas';
 import './InformeCobrosDiarios.css';
 
 const PAGE_SIZE = 1000;
@@ -71,6 +72,7 @@ const fetchAllRows = async (table, columns = '*', orderColumn = 'id', ascending 
       .from(table)
       .select(columns)
       .order(orderColumn, { ascending })
+      .order('id', { ascending })
       .range(from, to);
 
     if (error) throw error;
@@ -94,11 +96,7 @@ const InformeCobrosDiarios = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
   });
-  const [fechaFin, setFechaFin] = useState(() => {
-    const now = new Date();
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    return toLocalDateKey(lastDay);
-  });
+  const [fechaFin, setFechaFin] = useState(() => toLocalDateKey());
 
   useEffect(() => {
     const cargarAbonos = async () => {
@@ -116,6 +114,8 @@ const InformeCobrosDiarios = () => {
           const factura = facturaMap.get(abono.factura_id);
           return {
             ...abono,
+            // fecha es TIMESTAMPTZ: se deja solo el día para agrupar
+            fecha: fechaDia(abono.fecha),
             vendedor: factura?.vendedor || 'Sin vendedor',
             cliente: factura?.cliente || 'Sin cliente'
           };
