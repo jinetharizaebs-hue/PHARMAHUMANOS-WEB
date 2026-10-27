@@ -6,6 +6,7 @@ import { useAuth } from '../context/auth';
 import { getProductSalesAndRecommendations, mergeRecommendationsIntoProducts } from '../lib/inventoryUtils';
 import { reauthenticatePrivilegedUser } from '../lib/deleteAuthorization';
 import { fetchAllProducts } from '../lib/productQueries';
+import { useCategoriasProductos } from '../hooks/useCategoriasProductos';
 
 const categoriaIconos = {
   'Populares': 'fa-shampoo',
@@ -324,10 +325,10 @@ const ImportExportActions = ({ productos, productosFiltrados, setProductos }) =>
 };
 
 // Componente para reporte de inventario
-const ReporteInventario = ({ productos }) => {
+const ReporteInventario = ({ productos, categoriasFiltro }) => {
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
   const [filtroEstado, setFiltroEstado] = useState('activos');
-  const categorias = ['Todas', 'Populares', 'Genéricos', 'Medicamentos Éticos', 'Ortopédicos', 'Hospitalarios', 'Insumos médicos', 'Dispositivos médicos'];
+  const categorias = ['Todas', ...categoriasFiltro];
 
   // Filtrar productos según los filtros seleccionados
   const productosFiltrados = productos.filter(producto => {
@@ -563,7 +564,46 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
   const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
   const [mostrarAccionesMobile, setMostrarAccionesMobile] = useState(false);
 
-  const categorias = ['Populares', 'Genéricos', 'Medicamentos Éticos', 'Ortopédicos', 'Hospitalarios', 'Insumos médicos', 'Dispositivos médicos'];
+  const {
+    categorias: listaCategorias,
+    nombresActivos: categorias,
+    tablaDisponible: tablaCategoriasDisponible,
+    agregarCategoria,
+    cambiarActivo: cambiarActivoCategoria
+  } = useCategoriasProductos();
+  const [nuevaCategoria, setNuevaCategoria] = useState('');
+  const [creandoCategoria, setCreandoCategoria] = useState(false);
+  const [mostrarAdminCategorias, setMostrarAdminCategorias] = useState(false);
+
+  // Para filtrar también se incluyen categorías antiguas que aún tienen productos
+  const categoriasFiltro = [...new Set([
+    ...categorias,
+    ...productos.map(p => p.categoria).filter(Boolean)
+  ])].sort((a, b) => a.localeCompare(b, 'es'));
+
+  // Al editar, la categoría actual del producto debe seguir en la lista aunque esté desactivada
+  const categoriasFormulario = nuevoProducto.categoria && !categorias.includes(nuevoProducto.categoria)
+    ? [...categorias, nuevoProducto.categoria]
+    : categorias;
+
+  const guardarNuevaCategoria = async () => {
+    try {
+      const nombre = await agregarCategoria(nuevaCategoria);
+      setNuevoProducto(prev => ({ ...prev, categoria: nombre }));
+      setNuevaCategoria('');
+      setCreandoCategoria(false);
+    } catch (error) {
+      alert(error.message || 'No se pudo crear la categoría');
+    }
+  };
+
+  const alternarCategoria = async (categoria) => {
+    try {
+      await cambiarActivoCategoria(categoria.id, !categoria.activo);
+    } catch (error) {
+      alert(error.message || 'No se pudo actualizar la categoría');
+    }
+  };
 
 
   // Cargar productos desde Supabase
@@ -910,20 +950,6 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
           id="catalogo-acciones"
           className={`header-actions ${mostrarAccionesMobile ? 'mobile-open' : ''}`}
         >
-          {!isReadOnly && (
-            <ImportExportActions 
-              productos={productos}
-              productosFiltrados={productosFiltrados}
-              setProductos={setProductos}
-            />
-          )}
-          <button 
-            className="button warning-button"
-            onClick={() => setMostrarNotificaciones(!mostrarNotificaciones)}
-            title={`${notificacionesStock.length} productos con stock bajo`}
-          >
-            <i className="fas fa-exclamation-triangle"></i> Stock Bajo ({notificacionesStock.length})
-          </button>
           {!isReadOnly && user?.role !== 'inventario' && (
             <button 
               className="button success-button"
@@ -955,11 +981,25 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
           >
             <i className="fas fa-arrow-left"></i> Volver
           </button>
+          <button 
+            className="button warning-button"
+            onClick={() => setMostrarNotificaciones(!mostrarNotificaciones)}
+            title={`${notificacionesStock.length} productos con stock bajo`}
+          >
+            <i className="fas fa-exclamation-triangle"></i> Stock Bajo ({notificacionesStock.length})
+          </button>
+          {!isReadOnly && (
+            <ImportExportActions 
+              productos={productos}
+              productosFiltrados={productosFiltrados}
+              setProductos={setProductos}
+            />
+          )}
         </div>
       </header>
 
       {vistaActual === 'reporte' ? (
-        <ReporteInventario productos={productos} />
+        <ReporteInventario productos={productos} categoriasFiltro={categoriasFiltro} />
       ) : (
         <>
           <div className="resumen-productos">
@@ -1025,7 +1065,7 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
                 onChange={(e) => setCategoriaFiltro(e.target.value)}
               >
                 <option value="Todas">Todas las categorías</option>
-                {categorias.map(cat => (
+                {categoriasFiltro.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
@@ -1126,16 +1166,76 @@ const CatalogoProductos = ({ mode = 'admin' }) => {
                 
                 <div className="form-group">
                   <label>Categoría:</label>
-                  <select
-                    name="categoria"
-                    value={nuevoProducto.categoria}
-                    onChange={handleInputChange}
-                  >
-                    <option value="">Seleccione...</option>
-                    {categorias.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
+                  <div className="categoria-selector">
+                    <select
+                      name="categoria"
+                      value={nuevoProducto.categoria}
+                      onChange={handleInputChange}
+                    >
+                      <option value="">Seleccione...</option>
+                      {categoriasFormulario.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                    {tablaCategoriasDisponible && (
+                      <button
+                        type="button"
+                        className="btn-categoria"
+                        onClick={() => setCreandoCategoria(!creandoCategoria)}
+                      >
+                        <i className="fas fa-plus"></i> Nueva
+                      </button>
+                    )}
+                  </div>
+
+                  {creandoCategoria && (
+                    <div className="categoria-nueva">
+                      <input
+                        type="text"
+                        value={nuevaCategoria}
+                        onChange={(e) => setNuevaCategoria(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            guardarNuevaCategoria();
+                          }
+                        }}
+                        placeholder="Nombre de la nueva categoría"
+                        maxLength={80}
+                        autoFocus
+                      />
+                      <button type="button" className="btn-categoria" onClick={guardarNuevaCategoria}>
+                        Guardar
+                      </button>
+                    </div>
+                  )}
+
+                  {tablaCategoriasDisponible ? (
+                    <button
+                      type="button"
+                      className="link-categorias"
+                      onClick={() => setMostrarAdminCategorias(!mostrarAdminCategorias)}
+                    >
+                      {mostrarAdminCategorias ? 'Ocultar categorías' : 'Administrar categorías'}
+                    </button>
+                  ) : (
+                    <small className="categoria-aviso">
+                      Para crear categorías, ejecuta <strong>sql/CATEGORIAS_PRODUCTOS.sql</strong> en Supabase.
+                    </small>
+                  )}
+
+                  {mostrarAdminCategorias && (
+                    <ul className="categorias-admin">
+                      {listaCategorias.map(cat => (
+                        <li key={cat.id} className={cat.activo ? '' : 'inactiva'}>
+                          <span>{cat.nombre}</span>
+                          <button type="button" onClick={() => alternarCategoria(cat)}>
+                            {cat.activo ? 'Ocultar' : 'Mostrar'}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 
                 <div className="form-group">

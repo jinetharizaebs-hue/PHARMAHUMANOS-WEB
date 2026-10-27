@@ -1517,3 +1517,87 @@ button {
   font-size: 1.3rem;
   color: #4ad66d;
 }
+/* Categorías editables desde el formulario */
+.categoria-selector,
+.categoria-nueva {
+  display: flex;
+  gap: 8px;
+}
+
+.categoria-selector select,
+.categoria-nueva input {
+  flex: 1;
+  min-width: 0;
+}
+
+.categoria-nueva {
+  margin-top: 8px;
+}
+
+.btn-categoria {
+  padding: 8px 12px;
+  border: 1px solid #2a78d6;
+  border-radius: 6px;
+  background: #fff;
+  color: #2a78d6;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-categoria:hover {
+  background: #2a78d6;
+  color: #fff;
+}
+
+.link-categorias {
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #2a78d6;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.categoria-aviso {
+  display: block;
+  margin-top: 6px;
+  color: #6b7280;
+}
+
+.categorias-admin {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.categorias-admin li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.categorias-admin li:last-child {
+  border-bottom: none;
+}
+
+.categorias-admin li.inactiva span {
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.categorias-admin li button {
+  border: none;
+  background: none;
+  color: #2a78d6;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
